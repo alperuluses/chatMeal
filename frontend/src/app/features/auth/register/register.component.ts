@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  isSubmitting: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
 
@@ -27,7 +26,6 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      this.isSubmitting = true; // Form gönderimi başlıyor
       const { username, email, password } = this.registerForm.value;
 
       this.authService.register(username, email, password).subscribe(
@@ -35,7 +33,6 @@ export class RegisterComponent {
           if(res){
           this.successMessage = 'Kayıt başarılı! Giriş yapabilirsiniz.';
           this.errorMessage = '';
-          this.isSubmitting = false;
           // Kayıt başarılı olduğunda yönlendirme
           this.router.navigate(['/login']);
         }

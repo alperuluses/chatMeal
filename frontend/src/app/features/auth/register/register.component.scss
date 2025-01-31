@@ -9,16 +9,18 @@
     background: #1c1c1c; // Koyu gri arka plan
     padding: 40px 30px;
     border-radius: 15px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     max-width: 480px;
     color: #fff;
     transition: all 0.3s ease;
     width: 100%;
+    width: 400px;
+    background-color: #1b1b1b;
+    border: 1px solid #2e7d32;
   
     &:hover {
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3); // Hover efektiyle biraz daha vurgulama
     }
-  
+      
     h2 {
       text-align: center;
       font-size: 2rem;

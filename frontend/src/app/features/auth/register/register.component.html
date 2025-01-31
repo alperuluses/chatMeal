@@ -4,7 +4,7 @@
   <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
-  <div class="register-container">
+  <div class="register-container login-cart">
     <h2>Kayıt Ol</h2>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+      <button type="submit" class="btn btn-primary">
         Kayıt Ol
       </button>
     </form>
