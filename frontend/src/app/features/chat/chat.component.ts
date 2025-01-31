@@ -10,8 +10,9 @@ export interface Messages{
 }
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-chat',
   templateUrl: './chat.component.html',
+  styleUrls: ['./chat.component.scss'],
   imports:[CommonModule,FormsModule]
 })
 export class ChatComponent {

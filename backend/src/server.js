@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
+const serverRoutes = require('./routes/serverRoutes');
 
 dotenv.config();
 
@@ -11,6 +12,10 @@ app.use(express.json());
 
 // Kullanıcı API
 app.use('/api/auth', authRoutes);
+
+// Server API
+
+app.use('/api/server', serverRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

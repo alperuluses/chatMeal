@@ -1,120 +1,96 @@
-// Register Component SCSS
-.register-general-container{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+// Genel stil
+.register-general-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #121212; // Koyu tema
 }
+
+// Kart stilinde bir form
 .register-container {
-    background: #1c1c1c; // Koyu gri arka plan
-    padding: 40px 30px;
-    border-radius: 15px;
-    max-width: 480px;
-    color: #fff;
-    transition: all 0.3s ease;
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+// Başlık stili
+h2 {
+  font-size: 1.5rem;
+  color: #6d5dfc;
+  margin-bottom: 1rem;
+}
+
+// Form elemanları
+.form-group {
+  text-align: left;
+  margin-bottom: 1rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #d1d1d1;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  input {
     width: 100%;
-    width: 400px;
-    background-color: #1b1b1b;
-    border: 1px solid #2e7d32;
-  
-    &:hover {
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3); // Hover efektiyle biraz daha vurgulama
-    }
-      
-    h2 {
-      text-align: center;
-      font-size: 2rem;
-      color: #28a745; // Neon yeşil renk
-      margin-bottom: 30px;
-      font-weight: bold;
-    }
-  
-    .alert {
-      margin-bottom: 20px;
-      font-size: 1rem;
-      padding: 15px;
-      border-radius: 8px;
-    }
-  
-    .alert-success {
-      background-color: #28a745;
-      color: white;
-    }
-  
-    .alert-danger {
-      background-color: #ff3b3b;
-      color: white;
-    }
-  
-    .form-group {
-      margin-bottom: 20px;
-    }
-  
-    label {
-      font-weight: 600;
-      color: #ccc; // Açık gri etiketler
-      font-size: 1rem;
-      margin-bottom: 8px;
-    }
-  
-    .form-control {
-      background-color: #333; // Koyu gri inputlar
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-  
-      &:focus {
-        background-color: #444;
-        border-color: #28a745; // Yeşil focus border
-        box-shadow: 0 0 12px rgba(40, 167, 69, 0.5); // Neon yeşil glow
-      }
-    }
-  
-    .invalid-feedback {
-      color: #ff3b3b; // Kırmızı hata mesajı
-      font-size: 0.9rem;
-    }
-  
-    .btn-primary {
-      background-color: #28a745;
-      border-color: #28a745;
-      width: 100%;
-      padding: 16px;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-  
-      &:hover {
-        background-color: #218838; // Hover yeşil
-        border-color: #1e7e34;
-      }
-  
-      &:disabled {
-        background-color: #ccc;
-        border-color: #ccc;
-      }
-    }
-  
-    .footer {
-      text-align: center;
-      font-size: 0.9rem;
-      margin-top: 30px;
-      color: #888;
-  
-      a {
-        color: #28a745;
-        text-decoration: none;
-        font-weight: 600;
-  
-        &:hover {
-          text-decoration: underline;
-        }
-      }
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #2b2b2b;
+    color: #ffffff;
+    font-size: 0.9rem;
+    transition: border 0.3s;
+
+    &:focus {
+      border-color: #6d5dfc;
+      outline: none;
     }
   }
-  
+
+  .invalid-feedback {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+}
+
+// Buton
+.btn-primary {
+  width: 100%;
+  background: #6d5dfc;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+
+  &:hover {
+    background: #5a4df0;
+  }
+}
+
+// Footer kısmı
+.footer {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #b0b0b0;
+
+  a {
+    color: #6d5dfc;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

@@ -22,7 +22,6 @@ router.post('/register', (req, res) => {
 // Giriş Yap
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
     
     User.findByUsername(email, (err, user) => {
         if (!user) return res.status(400).json({ message: "Kullanıcı bulunamadı" });

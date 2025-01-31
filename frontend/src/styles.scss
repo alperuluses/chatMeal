@@ -1,9 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'bootstrap/dist/css/bootstrap.min.css';
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import "app/assets/styles/theme.scss";
 
 
 
-.login-btn {
-    background: #2e7d32;
-    color: white;
+.login-btn-primary {
+    color: $primary-color;
 }
