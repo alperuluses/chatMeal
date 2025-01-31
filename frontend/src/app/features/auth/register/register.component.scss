@@ -1,0 +1,118 @@
+// Register Component SCSS
+.register-general-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.register-container {
+    background: #1c1c1c; // Koyu gri arka plan
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    max-width: 480px;
+    color: #fff;
+    transition: all 0.3s ease;
+    width: 100%;
+  
+    &:hover {
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3); // Hover efektiyle biraz daha vurgulama
+    }
+  
+    h2 {
+      text-align: center;
+      font-size: 2rem;
+      color: #28a745; // Neon yeşil renk
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+  
+    .alert {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      padding: 15px;
+      border-radius: 8px;
+    }
+  
+    .alert-success {
+      background-color: #28a745;
+      color: white;
+    }
+  
+    .alert-danger {
+      background-color: #ff3b3b;
+      color: white;
+    }
+  
+    .form-group {
+      margin-bottom: 20px;
+    }
+  
+    label {
+      font-weight: 600;
+      color: #ccc; // Açık gri etiketler
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+  
+    .form-control {
+      background-color: #333; // Koyu gri inputlar
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+  
+      &:focus {
+        background-color: #444;
+        border-color: #28a745; // Yeşil focus border
+        box-shadow: 0 0 12px rgba(40, 167, 69, 0.5); // Neon yeşil glow
+      }
+    }
+  
+    .invalid-feedback {
+      color: #ff3b3b; // Kırmızı hata mesajı
+      font-size: 0.9rem;
+    }
+  
+    .btn-primary {
+      background-color: #28a745;
+      border-color: #28a745;
+      width: 100%;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  
+      &:hover {
+        background-color: #218838; // Hover yeşil
+        border-color: #1e7e34;
+      }
+  
+      &:disabled {
+        background-color: #ccc;
+        border-color: #ccc;
+      }
+    }
+  
+    .footer {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 30px;
+      color: #888;
+  
+      a {
+        color: #28a745;
+        text-decoration: none;
+        font-weight: 600;
+  
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  

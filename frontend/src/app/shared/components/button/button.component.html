@@ -1,0 +1,7 @@
+<ng-container *ngIf="routerLink;else button">
+  <a [routerLink]="routerLink" [type]="type" [ngClass]="class">{{ label }}</a>
+</ng-container>
+<ng-template #button>
+   <button [type]="type" [ngClass]="class">{{ label }}</button>
+</ng-template>
+
