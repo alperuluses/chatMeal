@@ -12,7 +12,6 @@ const initializeSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
-        console.log('Yeni kullanıcı bağlandı:', socket.id);
 
         // JWT doğrulama
         socket.on('authenticate', (token) => {

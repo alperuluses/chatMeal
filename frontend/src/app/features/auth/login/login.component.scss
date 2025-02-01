@@ -1,7 +1,81 @@
+// Genel stil
+.container-fluid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #121212; // Koyu tema
+}
+
+// Kart tasarımı
 .login-card {
-    width: 400px;
-    background-color: #1b1b1b;
-    border: 1px solid #2e7d32;
-    color: white;
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+// Başlık ve açıklamalar
+h2 {
+  font-size: 1.6rem;
+  color: #6d5dfc;
+}
+
+p {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+}
+
+// Form elemanları
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d1d1d1;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #2b2b2b;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: border 0.3s;
+
+  &:focus {
+    border-color: #6d5dfc;
+    outline: none;
   }
-  
+}
+
+// Buton
+.login-btn {
+  width: 100%;
+  background: #6d5dfc;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+
+  &:hover {
+    background: #5a4df0;
+  }
+}
+
+// Footer kısmı
+p a {
+  color: #6d5dfc;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

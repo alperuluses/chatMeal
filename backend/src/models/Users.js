@@ -12,7 +12,6 @@ class User {
 
     static findByUsername(email, callback) {
         const query = "SELECT * FROM users WHERE email = ?";
-        console.log(email);
         
         db.query(query, [email], (err, results) => {
             if (err) return callback(err);
