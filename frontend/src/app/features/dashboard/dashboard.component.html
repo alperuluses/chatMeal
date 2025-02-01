@@ -8,27 +8,33 @@
       
       <ul>
         <li *ngFor="let server of serverList" 
-            [class.active]="selectedChannel === server.id" 
+            [class.active]="selectedServer === server.id" 
             (click)="selectServer(server)">
-            <i class="bi bi-chat-left-text-fill"></i> {{ server.name }}
+            
+            <span>
+              <i class="bi bi-chat-left-text-fill"></i>
+              {{ server.name }}
+            </span> 
         </li>
       </ul>
     </aside>
   
     <!-- Orta Bölüm: Odalar -->
-    <!-- <section class="rooms" *ngIf="selectedChannel">
-      <h2>Odalar</h2>
-      <ul>
-        <li *ngFor="let room of selectedChannel.rooms" 
-            [class.active]="selectedRoom === room.id" 
-            (click)="selectRoom(room)">
-          {{ room.name }}
-        </li>
-      </ul>
-    </section> -->
+    <ng-container *ngIf="channels | async as channels">
+      <section class="rooms" *ngIf="channels.length > 0">
+        <h2>Odalar</h2>
+        <ul>
+          <li *ngFor="let channel of channels" 
+              [class.active]="selectedChannel === channel.id" 
+              (click)="selectChannel(channel)">
+            {{ channel.name }}
+          </li>
+        </ul>
+      </section>
+    </ng-container>
   
     <!-- Sağ Bölüm: Mesajlaşma Alanı -->
-    <!-- <app-chat *ngIf="selectedRoom"></app-chat> -->
+    <app-chat *ngIf="selectedChannel"></app-chat>
   </div>
   
   <!-- Modal: Kanal Ekleme -->

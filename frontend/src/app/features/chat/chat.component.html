@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="form">
-      <input type="text" [(ngModel)]="message" placeholder="Mesajınızı yazın..." />
-      <button (click)="sendMessage()" type="submit">Gönder</button>
+      <input type="text" (keydown.enter)="sendMessage()" [(ngModel)]="message" placeholder="Mesajınızı yazın..." />
+      <button (click)="sendMessage()"  type="submit">Gönder</button>
     </div>
 </section>

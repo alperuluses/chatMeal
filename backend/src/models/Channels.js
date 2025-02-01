@@ -1,9 +1,9 @@
 const db = require('../config/db');
 
 class Channel {
-    static create(name, serverId, callback) {
-        const query = "INSERT INTO channels (name, server_id) VALUES (?, ?)";
-        db.query(query, [name, serverId], callback);
+    static create(name, serverId, type, callback) {
+        const query = "INSERT INTO channels (name, server_id,type) VALUES (?, ?, ?)";
+        db.query(query, [name, serverId, type], callback);
     }
 
     static getByServerId(serverId, callback) {

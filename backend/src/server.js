@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const serverRoutes = require('./routes/serverRoutes');
+const channelRoutes = require('./routes/channelRoutes');
 
 dotenv.config();
 
@@ -16,6 +17,9 @@ app.use('/api/auth', authRoutes);
 // Server API
 
 app.use('/api/server', serverRoutes);
+
+// Kanal API
+app.use('/api/channels',channelRoutes); 
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
