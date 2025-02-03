@@ -9,3 +9,8 @@ export interface Server {
     servers?: Server[];
   }
   
+
+  export interface Messages{
+    content:string;
+    username:string;
+}

@@ -1,45 +1,65 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { SocketService } from '../../core/services/socket.service';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Messages } from '../../core/models/server.model';
 import { AuthService } from '../../core/services/auth-service';
-
-export interface Messages{
-    message:string;
-    username:string;
-}
+import { ChannelService } from '../../core/services/channel/channel.service';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
-  imports:[CommonModule,FormsModule]
+  imports: [FormsModule, CommonModule]
 })
-export class ChatComponent {
-    messages: Messages[] = [];
-    message: string = '';
-    
-    token:string | null = null;
+export class ChatComponent implements OnInit, OnChanges {
+  messages: Messages[] = [];
+  message: string = '';
+  
+  @Input() channelId: string | undefined = undefined; // Seçili kanal ID'si
+  @Input() channelName: string | undefined = undefined; // Seçili kanal adı
 
-    constructor(private socketService: SocketService,private authService:AuthService) {}
+  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService) {}
 
-    ngOnInit() {
-        this.token = this.authService.getToken();   
-        this.socketService.listenMessages((msg: Messages) => {
-            console.log(msg);
-            
-            this.messages.push(msg);
-        });
-        if(this.token){
-            this.socketService.authenticate(this.token);
-        }
+  ngOnInit(): void {
+    let token = this.authService.getToken();
+    if (token) {
+      this.socketService.authenticate(token);
     }
 
-    sendMessage() {
-        if (this.message.trim()) {
-            this.socketService.sendMessage(this.message);
-            this.message = '';
-        }
+    // Gelen mesajları dinle
+    this.socketService.onMessage((messageData) => {
+      messageData.content = messageData.message;
+      this.messages.push(messageData);
+    });
+
+    this.socketService.onRoomJoined((message) => {
+      console.log("Odaya giriş yapıldı:", message);
+    });
+
+    if (this.channelId) {
+      this.setMessages(this.channelId);
     }
+  
+  }
+
+  setMessages(channelId: string): void {
+    this.channelService.getAllMessagesWithChannel(channelId).subscribe((messages) => {
+      this.messages = messages;
+    });
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['channelId'] && this.channelId) {
+      this.setMessages(this.channelId);
+      this.messages = [];
+    }
+  }
+
+  sendMessage(): void {
+    if (this.message.trim()) {
+      this.socketService.sendMessage(this.message);
+      this.message = '';  // Mesaj gönderildikten sonra input temizle
+    }
+  }
+
 }
-

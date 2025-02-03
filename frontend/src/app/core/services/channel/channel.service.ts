@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateChannelResponse } from '../../models/channel.model';
+import { CreateChannelResponse, MessageResponse } from '../../models/channel.model';
 import { ApiUrlService } from '../api-url.service';
 
 @Injectable({
@@ -26,5 +26,10 @@ export class ChannelService {
   getAllChannels(): Observable<CreateChannelResponse> {
     const requestUrl = this.apiUrlService.getUrl('channels/all');
     return this.http.get<CreateChannelResponse>(requestUrl);
+  }
+
+  getAllMessagesWithChannel(channelId: string): Observable<MessageResponse[]> {
+    const requestUrl = this.apiUrlService.getUrl(`messages/${channelId}`);
+    return this.http.get<MessageResponse[]>(requestUrl);
   }
 }

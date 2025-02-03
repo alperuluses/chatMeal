@@ -1,8 +1,8 @@
 <section class="chat" *ngIf="true">
-    <h2>{{ "test" }}</h2>
+    <h2>{{ channelName }}</h2>
     <div class="messages">
       <div *ngFor="let message of messages" class="message">
-        <strong>{{ message.username }}:</strong> {{ message.message }}
+        <strong>{{ message.username }}:</strong> {{ message.content }}
       </div>
     </div>
     <div class="form">
