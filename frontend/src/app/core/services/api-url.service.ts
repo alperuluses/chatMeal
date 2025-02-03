@@ -15,4 +15,8 @@ export class ApiUrlService {
   getUrl(endpoint: string): string {
     return `${this.apiUrl}/${endpoint}`;
   }
+
+  getPureUrl(key:string): string {
+    return environment[key as keyof typeof environment] as string;
+  }
 }

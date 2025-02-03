@@ -38,9 +38,6 @@ class ChannelController {
                 return res.status(500).json({ message: "Kanallar alınamadı" });
             }
 
-            console.log("Kanallar getByServer:", channels);
-            
-
             res.status(200).json({ channels });
         });
     }

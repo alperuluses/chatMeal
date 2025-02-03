@@ -11,6 +11,8 @@ const initializeSocket = (server) => {
         }
     });
 
+    // Kullanıcıların hangi odada olduğunu takip etmek için bir nesne kullanabilirsiniz.
+    const usersInRooms = {};
     io.on('connection', (socket) => {
 
         // JWT doğrulama
@@ -27,7 +29,7 @@ const initializeSocket = (server) => {
         });
 
         // Odaya giriş
-        socket.on('joinChannel', (roomId) => {
+        socket.on('joinChannel', (roomId,previousChannelId) => {
             console.log('Odaya katılma isteği:', roomId);
             
             
@@ -37,6 +39,20 @@ const initializeSocket = (server) => {
                     console.log('Odanın ayrılması:', room);
                     socket.leave(room);
                 });
+
+                if (!usersInRooms[roomId]) {
+                    usersInRooms[roomId] = [];
+                }
+                console.log('Önceki odanın idsi:',previousChannelId);
+                
+                if(previousChannelId){
+                    usersInRooms[previousChannelId] = usersInRooms[previousChannelId].filter(user => user !== socket.user.username);
+                }
+
+                usersInRooms[roomId].push(socket.user.username);
+                usersInRooms[roomId] = Array.from(new Set(usersInRooms[roomId]));
+                // Odadaki kullanıcı listesini güncelleyin ve herkese gönderin
+                io.emit('updateUserList', usersInRooms);
 
                 socket.join(roomId);
                 console.log(`${socket.user.username} odasına katıldı: ${roomId}`);
@@ -54,7 +70,9 @@ const initializeSocket = (server) => {
                 try {
                     // Mesaj nesnesi oluştur
                     const newMessage = new MessageModel(roomId, userId, message);
-                    const messageId = await newMessage.save();
+                    const messageId = await newMessage.save((...args) => {
+                        console.log('Mesaj veritabanına kaydedildi',args);
+                    });
         
                     console.log('Mesaj veritabanına kaydedildi, ID:', messageId);
         
