@@ -4,89 +4,87 @@ import { FormsModule } from '@angular/forms';
 import { ChatComponent } from '../chat/chat.component';
 import { ServerService } from '../../core/services/server/server.service';
 import { Server } from '../../core/models/server.model';
-import { map, Observable, switchMap } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { ChannelService } from '../../core/services/channel/channel.service';
-import { Channel, CreateChannelResponse } from '../../core/models/channel.model';
+import { Channel } from '../../core/models/channel.model';
+import { SocketService } from '../../core/services/socket.service';
+import { AuthService } from '../../core/services/auth-service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports:[CommonModule,FormsModule,ChatComponent],
+  imports: [CommonModule, FormsModule, ChatComponent],
 })
 export class DashboardComponent implements OnInit {
 
   serverList: Server[] = [];
+  selectedServer: Server | null = null;
+  channels: Observable<Channel[]> | undefined = undefined;
+  channelChange: BehaviorSubject<Channel | undefined> = new BehaviorSubject<Channel | undefined>(undefined);
+  channelChange$: Observable<Channel | undefined> = this.channelChange.asObservable();
 
-  constructor(private serverService:ServerService, private channelService:ChannelService) {}
+  // Modal kontrolü
+  showAddServerModal: boolean = false;
+  newServerName: string = '';
 
-    ngOnInit(): void {
-      this.getAllServers();
-    }
+  constructor(
+    private serverService: ServerService,
+    private channelService: ChannelService,
+    private socketService: SocketService,
+    private authService: AuthService
+  ) {}
 
-  // channels = [
-  //   { id: 1, name: 'Genel Sohbet', rooms: [{ id: 101, name: 'Genel Oda 1', messages: [] }] },
-  //   { id: 2, name: 'Eğlence', rooms: [{ id: 201, name: 'Film & Dizi', messages: [] }] },
-  //   { id: 3, name: 'Oyunlar', rooms: [{ id: 301, name: 'Valorant', messages: [] }] }
-  // ];
+  ngOnInit(): void {
+    this.getAllServers();
+  }
 
-  getAllServers():void {
-    this.serverService.getServers().subscribe((res) => {   
-      if(res.servers)     
+  getAllServers(): void {
+    this.serverService.getServers().subscribe((res) => {
+      if (res.servers) {
         this.serverList = res.servers;
+      }
     });
   }
 
-  selectedServer: any = null;
-  selectedChannel: any = null;
-  newMessage: string = '';
-  channels:Observable<Channel[]> | undefined = undefined;
-
-  // Modal kontrolü
-  showAddChannelModal: boolean = false;
-  newChannelName: string = '';
-
-  selectServer(server: Server):void {
+  selectServer(server: Server): void {
     this.selectedServer = server;
-    if(server.id){
+    if (server.id) {
       this.channels = this.channelService.getChannelsByServer(server.id).pipe(
         map((res) => res.channels ? res.channels : [])  
       );
     }
   }
 
-  selectChannel(channel: any) {
-    console.log(channel);
-    
-    this.selectedChannel = channel;
-  }
+  selectChannel(channel: Channel): void {
+    console.log("Kanal değiştirildi:", channel);
+    let token = this.authService.getToken();
+    if(channel.id && token) {
+    this.socketService.authenticate(token); // Kullanıcıyı doğrula
+    this.socketService.joinRoom(channel.id); // Yeni odaya giriş
 
-  sendMessage() {
-    if (this.newMessage.trim() && this.selectedChannel) {
-      this.selectedChannel.messages.push({ sender: 'Sen', text: this.newMessage });
-      this.newMessage = '';
+    this.channelChange.next(channel);
     }
   }
 
-
   // Kanal ekleme modalını aç/kapat
-  openAddChannelModal() {
-    this.showAddChannelModal = true;
+  openAddServerModal() {
+    this.showAddServerModal = true;
   }
 
-  closeAddChannelModal() {
-    this.showAddChannelModal = false;
-    this.newChannelName = '';
+  closeAddServerModal() {
+    this.showAddServerModal = false;
+    this.newServerName = '';
   }
 
   // Yeni kanal ekleme
   addServer() {
-    if (this.newChannelName.trim()) {
-      this.serverService.createServer(this.newChannelName).subscribe((res) => {
+    if (this.newServerName.trim()) {
+      this.serverService.createServer(this.newServerName).subscribe((res) => {
         if (res.server.id) {
           this.getAllServers();
         }
-        this.closeAddChannelModal(); 
+        this.closeAddServerModal(); 
       });
     }
   }

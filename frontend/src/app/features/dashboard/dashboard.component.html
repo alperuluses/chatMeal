@@ -3,7 +3,7 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <h2>Kanallar</h2>
-        <button class="add-channel-btn" (click)="openAddChannelModal()"><i class="bi bi-patch-plus-fill"></i></button>
+        <button class="add-channel-btn" (click)="openAddServerModal()"><i class="bi bi-patch-plus-fill"></i></button>
       </div>
       
       <ul>
@@ -25,7 +25,6 @@
         <h2>Odalar</h2>
         <ul>
           <li *ngFor="let channel of channels" 
-              [class.active]="selectedChannel === channel.id" 
               (click)="selectChannel(channel)">
             {{ channel.name }}
           </li>
@@ -34,17 +33,20 @@
     </ng-container>
   
     <!-- Sağ Bölüm: Mesajlaşma Alanı -->
-    <app-chat *ngIf="selectedChannel"></app-chat>
+     <ng-container *ngIf="channelChange$ | async as selectedChannel">
+      <app-chat  [channelId]="selectedChannel.id" [channelName]="selectedChannel.name"></app-chat>
+     </ng-container>
+    
   </div>
   
   <!-- Modal: Kanal Ekleme -->
-  <div *ngIf="showAddChannelModal" class="modal-overlay">
+  <div *ngIf="showAddServerModal" class="modal-overlay">
     <div class="modal-channel-add">
       <h3>Yeni Kanal Ekle</h3>
-      <input type="text" [(ngModel)]="newChannelName" placeholder="Kanal adı girin..." />
+      <input type="text" [(ngModel)]="newServerName" placeholder="Kanal adı girin..." />
       <div class="modal-buttons">
         <button class="btn-save" (click)="addServer()">Ekle</button>
-        <button class="btn-cancel" (click)="closeAddChannelModal()">İptal</button>
+        <button class="btn-cancel" (click)="closeAddServerModal()">İptal</button>
       </div>
     </div>
   </div>

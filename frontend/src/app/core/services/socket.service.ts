@@ -1,23 +1,58 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class SocketService {
-    private socket: Socket;
+  private socket: Socket;
+  private readonly serverUrl: string = 'http://localhost:3001'; // Sunucu adresi
+  private currentRoom: string | null = null; // Kullanıcının bulunduğu oda
 
-    constructor() {
-        this.socket = io('http://localhost:3001');
+  constructor() {
+    this.socket = io(this.serverUrl);
+  }
+
+  // Kullanıcıyı doğrulama
+  authenticate(token: string) {
+    this.socket.emit('authenticate', token);
+  }
+
+  // Kullanıcı odaya girerken önceki odadan çıkart
+  joinRoom(channelId: string) {
+    if (this.currentRoom) {
+      this.leaveRoom(); // Önceki odadan çık
     }
 
-    authenticate(token: string) {
-        this.socket.emit('authenticate', token);
-    }
+    console.log("Join room FE:", channelId);
+    this.socket.emit('joinChannel', channelId);
+    this.currentRoom = channelId;
+  }
 
-    sendMessage(message: string) {
-        this.socket.emit('sendMessage', message);
+  // Kullanıcıyı mevcut odadan çıkar
+  leaveRoom() {
+    if (this.currentRoom) {
+      console.log("Leave room FE:", this.currentRoom);
+      this.socket.emit('leaveRoom');
+      this.currentRoom = null;
     }
+  }
 
-    listenMessages(callback: (data: any) => void) {
-        this.socket.on('receiveMessage', callback);
+  // Mesaj gönderme (hangi odadaysa oraya gönder)
+  sendMessage(message: string) {
+    if (this.currentRoom) {
+      console.log("Send message FE:", message, "Room:", this.currentRoom);
+      this.socket.emit('sendMessage', { message, roomId: this.currentRoom });
     }
+  }
+
+  // Gelen mesajları dinle
+  onMessage(callback: (message: any) => void) {
+    this.socket.on('receiveMessage', callback);
+  }
+
+  // Odaya katılma mesajlarını dinle
+  onRoomJoined(callback: (message: string) => void) {
+    this.socket.on('roomJoined', callback);
+  }
 }
