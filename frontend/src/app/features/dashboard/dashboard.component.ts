@@ -23,10 +23,12 @@ export class DashboardComponent implements OnInit {
   channels: Observable<Channel[]> | undefined = undefined;
   channelChange: BehaviorSubject<Channel | undefined> = new BehaviorSubject<Channel | undefined>(undefined);
   channelChange$: Observable<Channel | undefined> = this.channelChange.asObservable();
+  previousChannelId: any[] = [null];
 
   // Modal kontrolü
   showAddServerModal: boolean = false;
   newServerName: string = '';
+  usersInChannel:any; 
 
   constructor(
     private serverService: ServerService,
@@ -37,6 +39,11 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAllServers();
+    // Odadaki kullanıcı listesini güncelleyin ve herkese gönderin
+    this.socketService.onUpdateUserList((users) => {
+      this.usersInChannel = users;
+      console.log("Kullanıcı listesi güncellendi:", users); 
+    });
   }
 
   getAllServers(): void {
@@ -58,10 +65,13 @@ export class DashboardComponent implements OnInit {
 
   selectChannel(channel: Channel): void {
     console.log("Kanal değiştirildi:", channel);
+    this.previousChannelId.push(channel.id);
     let token = this.authService.getToken();
     if(channel.id && token) {
     this.socketService.authenticate(token); // Kullanıcıyı doğrula
-    this.socketService.joinRoom(channel.id); // Yeni odaya giriş
+    console.log("Previous", this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]);
+    
+    this.socketService.joinRoom(channel.id,this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]); // Yeni odaya giriş
 
     this.channelChange.next(channel);
     }

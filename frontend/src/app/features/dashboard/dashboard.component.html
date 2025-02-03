@@ -26,8 +26,18 @@
         <ul>
           <li *ngFor="let channel of channels" 
               (click)="selectChannel(channel)">
-            {{ channel.name }}
+            {{ channel.name }}<span class="text-success p-1">({{ channel.id ? (usersInChannel?.[channel.id]?.length || 0) : 0 }})</span>
+            <ul *ngIf="channel.id">
+              <ng-container *ngIf="usersInChannel?.[channel.id]">
+                <li *ngFor="let user of usersInChannel[channel.id]">
+                  <i class="bi bi-person-fill"></i>
+                  {{ user }}
+                </li>
+              </ng-container>
+
+            </ul>
           </li>
+
         </ul>
       </section>
     </ng-container>

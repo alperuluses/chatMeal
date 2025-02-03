@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
+import { ApiUrlService } from './api-url.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocketService {
   private socket: Socket;
-  private readonly serverUrl: string = 'http://localhost:3001'; // Sunucu adresi
+  private readonly serverUrl: string;
   private currentRoom: string | null = null; // Kullanıcının bulunduğu oda
 
-  constructor() {
+  constructor(private apiUrlService:ApiUrlService) {
+    this.serverUrl= this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
     this.socket = io(this.serverUrl);
   }
 
@@ -19,13 +21,13 @@ export class SocketService {
   }
 
   // Kullanıcı odaya girerken önceki odadan çıkart
-  joinRoom(channelId: string) {
+  joinRoom(channelId: string, previousChannelId:string) {
     if (this.currentRoom) {
       this.leaveRoom(); // Önceki odadan çık
     }
 
     console.log("Join room FE:", channelId);
-    this.socket.emit('joinChannel', channelId);
+    this.socket.emit('joinChannel', channelId,previousChannelId);
     this.currentRoom = channelId;
   }
 
@@ -54,5 +56,9 @@ export class SocketService {
   // Odaya katılma mesajlarını dinle
   onRoomJoined(callback: (message: string) => void) {
     this.socket.on('roomJoined', callback);
+  }
+
+  onUpdateUserList(callback: (users: string[]) => void) {
+    this.socket.on('updateUserList', callback);
   }
 }
