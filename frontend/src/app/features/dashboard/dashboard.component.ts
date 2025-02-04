@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ChatComponent } from '../chat/chat.component';
 import { ServerService } from '../../core/services/server/server.service';
 import { Server } from '../../core/models/server.model';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { ChannelService } from '../../core/services/channel/channel.service';
 import { Channel } from '../../core/models/channel.model';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth-service';
+import { MobileCheckService } from '../../core/services/mobile-check.service';
+
+
 
 @Component({
   selector: 'app-dashboard',
@@ -30,11 +33,15 @@ export class DashboardComponent implements OnInit {
   newServerName: string = '';
   usersInChannel:any; 
 
+  chatDisplayStatus:boolean = false;
+  serversDisplayStatus:boolean = true;
+
   constructor(
     private serverService: ServerService,
     private channelService: ChannelService,
     private socketService: SocketService,
-    private authService: AuthService
+    private authService: AuthService,
+    public mobileCheckService:MobileCheckService
   ) {}
 
   ngOnInit(): void {
@@ -58,9 +65,19 @@ export class DashboardComponent implements OnInit {
     this.selectedServer = server;
     if (server.id) {
       this.channels = this.channelService.getChannelsByServer(server.id).pipe(
-        map((res) => res.channels ? res.channels : [])  
+        map((res) => res.channels ? res.channels : []),
+        tap((res) => {
+          if (res.length > 0) {
+ 
+          }
+        })  
       );
     }
+  }
+
+  toggleStatus():void{
+    this.chatDisplayStatus = !this.chatDisplayStatus
+    this.serversDisplayStatus = !this.serversDisplayStatus;
   }
 
   selectChannel(channel: Channel): void {
@@ -72,7 +89,7 @@ export class DashboardComponent implements OnInit {
     console.log("Previous", this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]);
     
     this.socketService.joinRoom(channel.id,this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]); // Yeni odaya giriş
-
+    this.toggleStatus()
     this.channelChange.next(channel);
     }
   }
@@ -98,4 +115,6 @@ export class DashboardComponent implements OnInit {
       });
     }
   }
+
+
 }

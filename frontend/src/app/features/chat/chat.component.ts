@@ -1,10 +1,12 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, Output } from '@angular/core';
 import { SocketService } from '../../core/services/socket.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Messages } from '../../core/models/server.model';
 import { AuthService } from '../../core/services/auth-service';
 import { ChannelService } from '../../core/services/channel/channel.service';
+import { EventEmitter } from '@angular/core';
+import { MobileCheckService } from '../../core/services/mobile-check.service';
 
 @Component({
   selector: 'app-chat',
@@ -18,8 +20,12 @@ export class ChatComponent implements OnInit, OnChanges {
   
   @Input() channelId: string | undefined = undefined; // Seçili kanal ID'si
   @Input() channelName: string | undefined = undefined; // Seçili kanal adı
+  @Output() backStatus = new EventEmitter<boolean>();
 
-  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService) {}
+  sendData() {
+    this.backStatus.emit(true);
+  }
+  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService, public mobileCheckService:MobileCheckService) {}
 
   ngOnInit(): void {
     let token = this.authService.getToken();

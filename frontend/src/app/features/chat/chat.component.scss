@@ -2,6 +2,8 @@
     width: 60%;
 }
 
+
+
 .chat {
     width: 100%;
     padding: 1rem;
@@ -51,6 +53,27 @@
   
         &:hover {
           background: #5a4df0;
+        }
+      }
+    }
+  }
+
+  
+  @media (max-width: 768px) {
+    :host{
+      width: 100% !important;
+      h2{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .chat-header{
+        display: flex;
+        justify-content: space-between;
+
+        span{
+          color: #FFEB3B;
         }
       }
     }
