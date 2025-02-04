@@ -6,3 +6,12 @@ button {
     cursor: pointer;
   }
   
+  a {
+    color: #6d5dfc;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }

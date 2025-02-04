@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth-service';
 import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { GlobalErrorComponent } from '../../shared/components/global-error/global-error.component';
 
 export const httpInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -24,6 +25,9 @@ export const httpInterceptor: HttpInterceptorFn = (req, next) => {
         authService.logout(); // Tokeni temizle
         router.navigate(['/login']); // Login sayfasına yönlendir
       }
+      // Display global error message
+      console.log(error)
+      GlobalErrorComponent.errorSubject.next('Bir hata oluştu: ' + ((error.error.message) ? error.error.message : error.message));
       return throwError(() => error);
     })
   );

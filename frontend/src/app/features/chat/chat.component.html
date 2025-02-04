@@ -4,7 +4,7 @@
       <h2>{{ channelName }}</h2>
     </div>
 
-    <div class="messages">
+    <div class="messages" #chat>
       <div *ngFor="let message of messages" class="message">
         <strong>{{ message.username }}:</strong> {{ message.content }}
       </div>

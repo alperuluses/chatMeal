@@ -73,6 +73,7 @@ export class DashboardComponent implements OnInit {
         })  
       );
     }
+    this.socketService.emitUserList()
   }
 
   toggleStatus():void{

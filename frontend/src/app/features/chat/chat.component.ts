@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit, Output } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, Output, ViewChild, ElementRef } from '@angular/core';
 import { SocketService } from '../../core/services/socket.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -21,6 +21,7 @@ export class ChatComponent implements OnInit, OnChanges {
   @Input() channelId: string | undefined = undefined; // Seçili kanal ID'si
   @Input() channelName: string | undefined = undefined; // Seçili kanal adı
   @Output() backStatus = new EventEmitter<boolean>();
+  @ViewChild('chat') private chatScrollContainer!: ElementRef;
 
   sendData() {
     this.backStatus.emit(true);
@@ -46,6 +47,7 @@ export class ChatComponent implements OnInit, OnChanges {
     if (this.channelId) {
       this.setMessages(this.channelId);
     }
+    this.scrollToBottom();
   
   }
 
@@ -66,6 +68,16 @@ export class ChatComponent implements OnInit, OnChanges {
       this.socketService.sendMessage(this.message);
       this.message = '';  // Mesaj gönderildikten sonra input temizle
     }
+  }
+
+    ngAfterViewChecked() {        
+      this.scrollToBottom();        
+  } 
+
+  scrollToBottom(): void {
+      try {
+          this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
+      } catch(err) { }                 
   }
 
 }
