@@ -61,4 +61,8 @@ export class SocketService {
   onUpdateUserList(callback: (users: string[]) => void) {
     this.socket.on('updateUserList', callback);
   }
+
+  emitUserList(){
+    this.socket.emit("emitUserList")
+  }
 }

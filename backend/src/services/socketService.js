@@ -13,8 +13,9 @@ const initializeSocket = (server) => {
 
     // Kullanıcıların hangi odada olduğunu takip etmek için bir nesne kullanabilirsiniz.
     const usersInRooms = {};
+    const users = {}; // Kullanıcı bilgilerini saklamak için global bir nesne
     io.on('connection', (socket) => {
-
+        console.log('Kullanıcı katıldı:', socket.id);
         // JWT doğrulama
         socket.on('authenticate', (token) => {
             jwt.verify(token, process.env.JWT_SECRET || "chatAruSecret", (err, user) => {
@@ -22,7 +23,8 @@ const initializeSocket = (server) => {
                     socket.emit('authError', "Geçersiz token");
                     socket.disconnect();
                 } else {
-                    socket.user = user;
+                    socket.user = user; // Socket nesnesine kullanıcı bilgisini ekle
+                    users[socket.id] = user; // Kullanıcıyı global nesnede sakla
                     socket.emit('authSuccess', "Kimlik doğrulandı");
                 }
             });
@@ -60,6 +62,12 @@ const initializeSocket = (server) => {
             }
         });
 
+        socket.on('emitUserList', () => {
+            console.log("emitUserList");
+            
+            io.emit('updateUserList', usersInRooms);
+        })
+
         socket.on('sendMessage', async (messageData) => {
             console.log('Mesaj gönderildi:', messageData);
         
@@ -91,7 +99,29 @@ const initializeSocket = (server) => {
         
 
         socket.on('disconnect', () => {
-            console.log('Kullanıcı ayrıldı:', socket.id);
+            const user = users[socket.id]; // Kullanıcı bilgisini al
+    
+            if (user) {
+                console.log(`Kullanıcı ayrıldı: ${user.username}`);
+    
+                // Kullanıcının bulunduğu odayı bul
+                for (const roomId in usersInRooms) {
+                    if (usersInRooms[roomId].includes(user.username)) {
+                        console.log(`Kullanıcı ${user.username}, ${roomId} odasından ayrıldı.`);
+    
+                        // Kullanıcıyı odadan çıkar
+                        usersInRooms[roomId] = usersInRooms[roomId].filter(u => u !== user.username);
+    
+                        // Kullanıcı listesini güncelle
+                        io.emit('updateUserList', usersInRooms);
+                        break;
+                    }
+                }
+    
+                delete users[socket.id]; // Kullanıcıyı global nesneden kaldır
+            } else {
+                console.log(`Bilinmeyen kullanıcı ayrıldı: ${socket.id}`);
+            }
         });
     });
 

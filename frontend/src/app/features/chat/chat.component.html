@@ -1,6 +1,10 @@
-<section class="chat" *ngIf="true">
-    <h2>{{ channelName }}</h2>
-    <div class="messages">
+<section class="chat" >
+    <div class="chat-header">
+      <span [ngClass]="{'d-none':mobileCheckService.isMobile() === false}" (click)="sendData()"><i class="bi bi-arrow-left"></i>BACK</span>
+      <h2>{{ channelName }}</h2>
+    </div>
+
+    <div class="messages" #chat>
       <div *ngFor="let message of messages" class="message">
         <strong>{{ message.username }}:</strong> {{ message.content }}
       </div>
