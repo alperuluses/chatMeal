@@ -60,24 +60,18 @@
           },
           "defaultConfiguration": "production"
         },
-          "serve": {
-        "builder": "@angular-devkit/build-angular:dev-server",
-        "configurations": {
-          "production": {
-            "buildTarget": "socket-chat:build:production"
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "socket-chat:build:production"
+            },
+            "development": {
+              "buildTarget": "socket-chat:build:development"
+            }
           },
-          "development": {
-            "buildTarget": "socket-chat:build:development",
-            "proxyConfig": "src/proxy.conf.json"
-          }
+          "defaultConfiguration": "development"
         },
-        "defaultConfiguration": "development",
-        "options": {
-          "host": "0.0.0.0",    
-          "port": 8080
-        }
-      }
-      ,
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
         },
