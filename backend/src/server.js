@@ -5,7 +5,6 @@ const authRoutes = require('./routes/authRoutes');
 const serverRoutes = require('./routes/serverRoutes');
 const channelRoutes = require('./routes/channelRoutes');
 const messagesRoutes = require('./routes/messagesRoutes');
-const { startSocketServer } = require('./socket');
 
 
 dotenv.config();

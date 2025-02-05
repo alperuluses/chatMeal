@@ -9,7 +9,7 @@ const server = http.createServer();
 initializeSocket(server);
 
 // Get port from environment variable for Railway deployment
-const SOCKET_PORT = process.env.PORT || 3001;
+const SOCKET_PORT = 3001;
 
 // Start the server on the designated port
 server.listen(SOCKET_PORT, () => {
