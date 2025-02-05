@@ -1,0 +1,8 @@
+{
+    "/api": {
+      "target": "https://chatmeal-production-8b07.up.railway.app",
+      "secure": false,
+      "changeOrigin": true
+    }
+  }
+  
