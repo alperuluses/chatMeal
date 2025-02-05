@@ -18,6 +18,9 @@
                 </span> 
             </li>
           </ul>
+          <div class="sidebar-footer">
+            <button class="logout-btn" (click)="logout()">Çıkış Yap</button>
+          </div>
         </aside>
           <!-- Orta Bölüm: Odalar -->
         <ng-container *ngIf="channels | async as channels">
