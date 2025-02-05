@@ -28,7 +28,8 @@ app.use('/api/channels',channelRoutes);
 app.use('/api/messages', messagesRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT,'192.168.1.21', () => {
     console.log(`Express API ${PORT} portunda çalışıyor`);
 });
+
 startSocketServer()
