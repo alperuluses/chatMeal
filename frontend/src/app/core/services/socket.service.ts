@@ -15,6 +15,16 @@ export class SocketService {
     this.socket = io(this.serverUrl);
   }
 
+  on(event: string, callback: (data: any) => void) {
+    this.socket.on(event, callback);
+  }
+
+  emit(event: string, data: any) {
+    console.log(data);
+    
+    this.socket.emit(event, data);
+  }
+
   // Kullanıcıyı doğrulama
   authenticate(token: string) {
     this.socket.emit('authenticate', token);

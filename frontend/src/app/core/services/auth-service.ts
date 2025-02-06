@@ -9,7 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 export class AuthService {
   constructor(private http:HttpClient, private apiUrlService: ApiUrlService) { }
-
+  userMail:string=""
   // Kayıt olma (Register) işlemi
   register(username: string, email: string, password: string): Observable<any> {
     const requestUrl = this.apiUrlService.getUrl('auth/register')
@@ -32,7 +32,9 @@ export class AuthService {
       email:email,
       password:password
     }
-
+    this.userMail = email
+    console.log();
+    
     return this.http.post(requestUrl, body, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });

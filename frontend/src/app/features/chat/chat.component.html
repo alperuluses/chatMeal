@@ -1,4 +1,8 @@
 <section class="chat" >
+  `<div class="voice-chat">
+    <button (click)="startCall()">Start Call</button>
+    <audio #audioElement autoplay></audio>
+  </div>`
     <div class="chat-header">
       <span [ngClass]="{'d-none':mobileCheckService.isMobile() === false}" (click)="sendData()"><i class="bi bi-arrow-left"></i>BACK</span>
       <h2>{{ channelName }}</h2>

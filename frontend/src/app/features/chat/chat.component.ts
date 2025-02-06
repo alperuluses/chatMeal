@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit, Output, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, Output, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { SocketService } from '../../core/services/socket.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,8 @@ import { AuthService } from '../../core/services/auth-service';
 import { ChannelService } from '../../core/services/channel/channel.service';
 import { EventEmitter } from '@angular/core';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
+import { io } from 'socket.io-client';
+import { WebrtcService } from '../../core/services/webRTC/webrtc.service';
 
 @Component({
   selector: 'app-chat',
@@ -14,7 +16,7 @@ import { MobileCheckService } from '../../core/services/mobile-check.service';
   styleUrls: ['./chat.component.scss'],
   imports: [FormsModule, CommonModule]
 })
-export class ChatComponent implements OnInit, OnChanges {
+export class ChatComponent implements OnInit, OnChanges,AfterViewInit {
   messages: Messages[] = [];
   message: string = '';
   
@@ -22,11 +24,12 @@ export class ChatComponent implements OnInit, OnChanges {
   @Input() channelName: string | undefined = undefined; // Seçili kanal adı
   @Output() backStatus = new EventEmitter<boolean>();
   @ViewChild('chat') private chatScrollContainer!: ElementRef;
+  @ViewChild('audioElement') audioElement!: ElementRef;
 
   sendData() {
     this.backStatus.emit(true);
   }
-  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService, public mobileCheckService:MobileCheckService) {}
+  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService, public mobileCheckService:MobileCheckService,private webrtcService: WebrtcService) {}
 
   ngOnInit(): void {
     let token = this.authService.getToken();
@@ -49,6 +52,22 @@ export class ChatComponent implements OnInit, OnChanges {
     }
     this.scrollToBottom();
   
+  }
+
+  async startCall() {
+    await this.webrtcService.setupMediaStream(); // Önce mikrofon akışını başlat
+    await this.webrtcService.createOffer();
+  }
+
+  ngAfterViewInit() {
+    const peerConnection = this.webrtcService.getPeerConnection();
+    peerConnection.ontrack = (event) => {
+      console.log("track geldi:",event);
+      
+      if (this.audioElement) {
+        this.audioElement.nativeElement.srcObject = event.streams[0];
+      }
+    };
   }
 
   setMessages(channelId: string): void {

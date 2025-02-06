@@ -1,7 +1,7 @@
 // src/app/core/services/api-url.service.ts
 
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environments';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

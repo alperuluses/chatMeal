@@ -62,6 +62,24 @@ const initializeSocket = (server) => {
             }
         });
 
+        socket.on('disconnect', () => {
+            console.log('user disconnected:', socket.id);
+        });
+    
+        socket.on('offer', (data) => {
+            console.log("offer",data);
+            
+            socket.broadcast.emit('offer', data);
+        });
+    
+        socket.on('answer', (data) => {
+            socket.broadcast.emit('answer', data);
+        });
+    
+        socket.on('candidate', (data) => {
+            socket.broadcast.emit('candidate', data);
+        });
+
         socket.on('emitUserList', () => {
             console.log("emitUserList");
             
@@ -96,7 +114,7 @@ const initializeSocket = (server) => {
                 socket.emit('error', 'Odaya katılmadınız.');
             }
         });
-        
+
 
         socket.on('disconnect', () => {
             const user = users[socket.id]; // Kullanıcı bilgisini al
