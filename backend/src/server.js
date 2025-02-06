@@ -5,7 +5,6 @@ const authRoutes = require('./routes/authRoutes');
 const serverRoutes = require('./routes/serverRoutes');
 const channelRoutes = require('./routes/channelRoutes');
 const messagesRoutes = require('./routes/messagesRoutes');
-const { startSocketServer } = require('./socket');
 
 
 dotenv.config();
@@ -27,7 +26,7 @@ app.use('/api/channels',channelRoutes);
 // Mesaj API
 app.use('/api/messages', messagesRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT =  3000;
 app.listen(PORT, () => {
     console.log(`Express API ${PORT} portunda çalışıyor`);
 });
