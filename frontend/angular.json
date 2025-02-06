@@ -38,6 +38,12 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -53,31 +59,48 @@
               "outputHashing": "all"
             },
             "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
         },
-          "serve": {
-        "builder": "@angular-devkit/build-angular:dev-server",
-        "configurations": {
-          "production": {
-            "buildTarget": "socket-chat:build:production"
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "socket-chat:build:production"
+            },
+            "development": {
+              "buildTarget": "socket-chat:build:development",
+              "proxyConfig": "src/proxy.conf.json"
+            },
+            "staging": {
+              "buildTarget": "socket-chat:build:staging"
+            }
           },
-          "development": {
-            "buildTarget": "socket-chat:build:development",
-            "proxyConfig": "src/proxy.conf.json"
+          "defaultConfiguration": "development",
+          "options": {
+            "host": "0.0.0.0",
+            "port": 8080
           }
         },
-        "defaultConfiguration": "development",
-        "options": {
-          "host": "0.0.0.0",    
-          "port": 8080
-        }
-      }
-      ,
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
         },
