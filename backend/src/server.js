@@ -10,7 +10,14 @@ const messagesRoutes = require('./routes/messagesRoutes');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+    origin: ['https://chatmeal.netlify.app/', 'http://localhost:8080',"http://192.168.1.21:8080"],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  };
+  
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // Kullanıcı API
