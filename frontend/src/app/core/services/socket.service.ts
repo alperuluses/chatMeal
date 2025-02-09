@@ -12,7 +12,11 @@ export class SocketService {
 
   constructor(private apiUrlService:ApiUrlService) {
     this.serverUrl= this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
-    this.socket = io(this.serverUrl);
+    this.socket = this.getIo()
+  }
+
+  getIo(){
+    return io(this.serverUrl);
   }
 
   on(event: string, callback: (data: any) => void) {

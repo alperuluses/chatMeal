@@ -7,8 +7,7 @@ import { AuthService } from '../../core/services/auth-service';
 import { ChannelService } from '../../core/services/channel/channel.service';
 import { EventEmitter } from '@angular/core';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
-import { io } from 'socket.io-client';
-import { WebrtcService } from '../../core/services/webRTC/webrtc.service';
+import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -16,7 +15,7 @@ import { WebrtcService } from '../../core/services/webRTC/webrtc.service';
   styleUrls: ['./chat.component.scss'],
   imports: [FormsModule, CommonModule]
 })
-export class ChatComponent implements OnInit, OnChanges,AfterViewInit {
+export class ChatComponent implements OnInit, OnChanges {
   messages: Messages[] = [];
   message: string = '';
   
@@ -29,9 +28,10 @@ export class ChatComponent implements OnInit, OnChanges,AfterViewInit {
   sendData() {
     this.backStatus.emit(true);
   }
-  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService, public mobileCheckService:MobileCheckService,private webrtcService: WebrtcService) {}
+  constructor(private socketService: SocketService, private authService: AuthService, private channelService:ChannelService, public mobileCheckService:MobileCheckService,private voiceChatService:VoiceChatService) {}
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    await this.voiceChatService.initMedia();
     let token = this.authService.getToken();
     if (token) {
       this.socketService.authenticate(token);
@@ -54,20 +54,8 @@ export class ChatComponent implements OnInit, OnChanges,AfterViewInit {
   
   }
 
-  async startCall() {
-    await this.webrtcService.setupMediaStream(); // Önce mikrofon akışını başlat
-    await this.webrtcService.createOffer();
-  }
-
-  ngAfterViewInit() {
-    const peerConnection = this.webrtcService.getPeerConnection();
-    peerConnection.ontrack = (event) => {
-      console.log("track geldi:",event);
-      
-      if (this.audioElement) {
-        this.audioElement.nativeElement.srcObject = event.streams[0];
-      }
-    };
+  callAgain(){
+    this.voiceChatService.callAgain();
   }
 
   setMessages(channelId: string): void {

@@ -10,7 +10,6 @@ const connection = mysql.createConnection({
 });
 
 connection.connect((err) => {
-    console.log(process.env);
     
     if (err) throw err;
     console.log("MySQL bağlantısı başarılı!");

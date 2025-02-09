@@ -14,6 +14,7 @@ const initializeSocket = (server) => {
     // Kullanıcıların hangi odada olduğunu takip etmek için bir nesne kullanabilirsiniz.
     const usersInRooms = {};
     const users = {}; // Kullanıcı bilgilerini saklamak için global bir nesne
+    const rooms = {}; // Odaları saklamak için obje
     io.on('connection', (socket) => {
         console.log('Kullanıcı katıldı:', socket.id);
         // JWT doğrulama
@@ -57,28 +58,19 @@ const initializeSocket = (server) => {
                 io.emit('updateUserList', usersInRooms);
 
                 socket.join(roomId);
-                console.log(`${socket.user.username} odasına katıldı: ${roomId}`);
+                console.log(`${socket.user.username} odasına katıldı: ${roomId} - ${typeof roomId}`);
                 socket.emit('roomJoined', `Odaya katıldınız: ${roomId}`);
             }
         });
 
-        socket.on('disconnect', () => {
-            console.log('user disconnected:', socket.id);
-        });
-    
-        socket.on('offer', (data) => {
-            console.log("offer",data);
-            
-            socket.broadcast.emit('offer', data);
-        });
-    
-        socket.on('answer', (data) => {
-            socket.broadcast.emit('answer', data);
-        });
-    
-        socket.on('candidate', (data) => {
-            socket.broadcast.emit('candidate', data);
-        });
+        socket.on('join-room', (roomId, userId) => {
+            if (!rooms[roomId]) {
+              rooms[roomId] = [];
+            }
+            rooms[roomId].push(userId);
+            socket.join(roomId);
+            socket.to(roomId).emit('user-connected', userId);
+          });
 
         socket.on('emitUserList', () => {
             console.log("emitUserList");
