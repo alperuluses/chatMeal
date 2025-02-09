@@ -6,5 +6,5 @@ import { httpInterceptor } from './core/interceptors/http.interceptor';
 
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes,withHashLocation()),provideHttpClient(withInterceptors([httpInterceptor]))]
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),provideHttpClient(withInterceptors([httpInterceptor]))]
 };
