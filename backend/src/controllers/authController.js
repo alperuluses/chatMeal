@@ -25,7 +25,7 @@ exports.login = (req, res) => {
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (!isMatch) return res.status(400).json({ message: "Şifre yanlış" });
 
-            const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+            const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '24h' });
             res.json({ token, username: user.username });
         });
     });
