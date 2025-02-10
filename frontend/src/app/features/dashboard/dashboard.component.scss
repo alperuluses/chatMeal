@@ -12,10 +12,11 @@
   
   // Sol Menü (Kanallar)
   .sidebar {
-    width: 50%;
+    width: 40%;
     background: #1e1e1e;
     padding: 1rem;
     border-right: 1px solid #333;
+    position: relative;
 
     .sidebar-header{
         display: flex;
@@ -23,6 +24,22 @@
         justify-content: space-between;
     }
 
+    .sidebar-footer {
+      width: 100%;
+      .logout-btn {
+        background-color: #6d5dfc;
+        color: #fff;
+        border: 0;
+        outline: 0;
+        width: 100%;
+        padding: 8px 0;
+        border-radius: 4px;
+        transition: all .3s;
+        &:hover {
+          background-color: #5a4df0;
+        }
+      }
+    }
 
     .add-channel-btn {
         background: #6d5dfc;

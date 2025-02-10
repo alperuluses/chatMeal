@@ -10,6 +10,7 @@ import { Channel } from '../../core/models/channel.model';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth-service';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
+import { Router, RouterModule } from '@angular/router';
 
 
 
@@ -17,7 +18,7 @@ import { MobileCheckService } from '../../core/services/mobile-check.service';
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [CommonModule, FormsModule, ChatComponent],
+  imports: [CommonModule, FormsModule, ChatComponent, RouterModule],
 })
 export class DashboardComponent implements OnInit {
 
@@ -41,7 +42,8 @@ export class DashboardComponent implements OnInit {
     private channelService: ChannelService,
     private socketService: SocketService,
     private authService: AuthService,
-    public mobileCheckService:MobileCheckService
+    public mobileCheckService:MobileCheckService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -117,5 +119,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login'])
+  }
 
 }
