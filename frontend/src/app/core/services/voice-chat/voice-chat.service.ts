@@ -34,6 +34,8 @@ export class VoiceChatService {
       } else {
         console.warn('⚠️ Media stream henüz hazır değil');
       }
+
+      this.callAgain();
     })
 
     this.socket.on('user-disconnected', (userId) => {
