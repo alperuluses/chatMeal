@@ -1,31 +1,34 @@
-chatMEAL - WebRTC Tabanlı Sesli ve Yazılı Sohbet Uygulaması
+# ChatMeal
 
-chatAru, Angular, WebRTC, Socket.io, Peer.js, Express ve Node.js kullanarak geliştirilen, kullanıcıların sunucu (server) oluşturarak sesli ve yazılı sohbet edebileceği bir web uygulamasıdır.
+ChatMeal, kullanıcıların sohbet arayüzü üzerinden yemek seçimi, öneri alma ve sipariş verme işlemlerini kolaylaştıran interaktif bir uygulamadır. Bu proje, modern web teknolojileri kullanılarak geliştirilmiştir ve kullanıcı dostu deneyimiyle öne çıkar.
 
+## İçindekiler
 
-✨ Özellikler
+- [Özellikler](#özellikler)
+- [Kurulum](#kurulum)
+- [Kullanım](#kullanım)
+- [Katkıda Bulunanlar](#katkıda-bulunanlar)
+- [Lisans](#lisans)
+- [İletişim](#iletişim)
+- [Teşekkür](#teşekkür)
 
-🏢 Sunucu ve Sohbet Odaları: Kullanıcılar kendi sunucularını oluşturabilir ve başkalarını davet edebilir.
+## Özellikler
 
-🎧 Gerçek Zamanlı Sesli Sohbet: WebRTC ve Peer.js kullanarak birden fazla kullanıcının sesli sohbet etmesini sağlar.
+- **Etkileşimli Sohbet Arayüzü:** Kullanıcıların kolayca yemek seçimi yapabileceği ve öneriler alabileceği modern sohbet deneyimi.
+- **Kişiselleştirilmiş Öneriler:** Kullanıcının tercihlerine göre özelleştirilmiş yemek önerileri.
+- **Sipariş Yönetimi:** Menülerin görüntülenmesi, siparişlerin alınması ve sipariş durumunun takip edilmesi.
+- **Gerçek Zamanlı Güncellemeler:** Sipariş ve menü güncellemelerinin anlık olarak yansıtılması.
 
-💬 Gerçek Zamanlı Yazılı Sohbet: Socket.io ile mesajlaşma desteği.
+## Kurulum
 
-🔐 Giriş ve Kaydolma Sistemi: Kullanıcılar hesap oluşturabilir ve oturum açabilir.
+### Gereksinimler
 
-🛠️ Yetkilendirme Sistemi: Sunucu sahipleri kullanıcıların yetkilerini yönetebilir.
+- [Node.js](https://nodejs.org/) (v14 veya üstü) veya projenin kullandığı diğer teknolojilere göre uygun ortam.
+- İlgili paket yöneticisi (örn. npm, yarn) veya Python ortamı (eğer Python tabanlı ise).
 
-⚠️ Güvenlik ve Gizlilik: Kullanıcı verileri şifrelenir, JWT ile güvenli kimlik doğrulama sağlanır ve güncellenmiş WebRTC protokolleri kullanılır.
+### Adımlar
 
+1. **Repository'yi Klonlayın**
 
-⚡ Teknolojiler
-
-Frontend: Angular, TypeScript, SCSS
-
-Backend: Node.js, Express, MySQL
-
-Gerçek Zamanlı Sohbet: WebRTC, Peer.js, Socket.io
-
-Kimlik Doğrulama: JWT, BCrypt
-
-Güvenlik: AES şifreleme, HTTPS, Rate Limiting
+   ```bash
+   git clone https://github.com/alperuluses/chatMeal.git
