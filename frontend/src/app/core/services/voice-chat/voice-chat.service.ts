@@ -58,7 +58,7 @@ export class VoiceChatService {
         audio: {
             sampleRate: 48000,  // Yüksek kalite için 48kHz
             channelCount: 2,     // Stereo ses desteği
-            volume: 1.0,
+            volume: 2.0,
             autoGainControl: false,  // Otomatik ses ayarlamasını kapat
             noiseSuppression: true, // Gürültü engellemeyi kapat (bazı durumlarda kaliteyi düşürebilir)
             echoCancellation: true   // Yankıyı önlemek için açık bırak
