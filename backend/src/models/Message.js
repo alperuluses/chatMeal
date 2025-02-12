@@ -35,7 +35,7 @@ class MessageModel {
 
         db.query(sql, [channelId], (err, results) => {
             if (err) return callback(err, null);
-            callback(null, results);
+            callback(null, results.reverse());
         });
     }
 }
