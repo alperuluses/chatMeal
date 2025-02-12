@@ -54,10 +54,6 @@ export class ChatComponent implements OnInit, OnChanges {
   
   }
 
-  callAgain(){
-    this.voiceChatService.callAgain();
-  }
-
   setMessages(channelId: string): void {
     this.channelService.getAllMessagesWithChannel(channelId).subscribe((messages) => {
       this.messages = messages;
