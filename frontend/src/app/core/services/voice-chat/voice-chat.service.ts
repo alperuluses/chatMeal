@@ -1,8 +1,7 @@
 // voice-chat.service.ts
 import { Injectable } from '@angular/core';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import Peer from 'peerjs';
-import { ApiUrlService } from '../api-url.service';
 import { SocketService } from '../socket.service';
 
 @Injectable({ providedIn: 'root' })
@@ -20,9 +19,10 @@ export class VoiceChatService {
 
     this.socket.on('user-connected', async (userId) => {
       console.log('🟢 Yeni kullanıcı bağlandı:', userId);
-      if (this.myStream) {
+      if (this.myStream && this.peer.id < userId) { // Peer ID'si küçük olan arama başlatır
         this.callUser(userId);
       } else {
+        this.callUser(userId);
         console.warn('⚠️ Media stream henüz hazır değil');
       }
     })
@@ -36,13 +36,28 @@ export class VoiceChatService {
     });
   }
 
-  initPeer(){
-    this.peer = new Peer();
-
-    this.peer.on('open', async (id) => {
-      console.log('🔗 Peer ID:', id);
+  async initialize() {
+    try {
+      const peerId = await this.initPeer();
       await this.initMedia();
-      this.socket.emit('join-room', 'test-room', id);
+      this.socket.emit('join-room', 'test-room', peerId);
+    } catch (error) {
+      console.error('❌ Peer başlatma hatası:', error);
+    }
+  }
+
+  initPeer(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.peer = new Peer();
+  
+      this.peer.on('open', (id) => {
+        console.log('🔗 Peer ID:', id);
+        resolve(id);
+      });
+  
+      this.peer.on('error', (err) => {
+        reject(err);
+      });
     });
   }
 
@@ -53,10 +68,19 @@ export class VoiceChatService {
 
       this.peer.on('call', (call) => {
         console.log('📞 Gelen çağrı:', call);
-        call.answer(this.myStream); // myStream null kontrolü burada yapılmış
+        call.answer(this.myStream);
+      
         call.on('stream', (userStream) => {
           console.log('🎤 Kullanıcı sesi alındı');
           this.addAudioStream(userStream);
+        });
+      
+        call.on('error', (err) => {
+          console.error('❌ Call error:', err);
+        });
+      
+        call.on('close', () => {
+          console.warn('📴 Call closed');
         });
       });
     } catch (error) {
