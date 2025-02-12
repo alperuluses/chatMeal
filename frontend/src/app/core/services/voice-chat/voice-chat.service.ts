@@ -54,7 +54,17 @@ export class VoiceChatService {
 
   async initMedia() {
     try {
-      this.myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const constraints = {
+        audio: {
+            sampleRate: 48000,  // Yüksek kalite için 48kHz
+            channelCount: 2,     // Stereo ses desteği
+            volume: 1.0,
+            autoGainControl: false,  // Otomatik ses ayarlamasını kapat
+            noiseSuppression: true, // Gürültü engellemeyi kapat (bazı durumlarda kaliteyi düşürebilir)
+            echoCancellation: true   // Yankıyı önlemek için açık bırak
+        }
+    };
+      this.myStream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('✅ Media stream initialized');
 
       this.peer.on('call', (call) => {
