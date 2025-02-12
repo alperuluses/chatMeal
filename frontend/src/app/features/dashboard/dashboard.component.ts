@@ -10,6 +10,7 @@ import { Channel } from '../../core/models/channel.model';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth-service';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
+import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
 
 
 
@@ -41,7 +42,8 @@ export class DashboardComponent implements OnInit {
     private channelService: ChannelService,
     private socketService: SocketService,
     private authService: AuthService,
-    public mobileCheckService:MobileCheckService
+    public mobileCheckService:MobileCheckService,
+    private voiceChatService:VoiceChatService
   ) {}
 
   ngOnInit(): void {
@@ -82,6 +84,7 @@ export class DashboardComponent implements OnInit {
   }
 
   selectChannel(channel: Channel): void {
+    this.voiceChatService.initMedia();
     console.log("Kanal değiştirildi:", channel);
     this.previousChannelId.push(channel.id);
     let token = this.authService.getToken();

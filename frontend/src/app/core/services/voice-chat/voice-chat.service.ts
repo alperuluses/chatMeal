@@ -14,7 +14,6 @@ export class VoiceChatService {
 
   constructor(private socketService:SocketService) {
     this.socket = this.socketService.getIo();
-
     this.socket.on('connect', () => {
       console.log('✅ Socket.io bağlantısı başarılı');
     });
