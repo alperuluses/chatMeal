@@ -29,12 +29,13 @@ class MessageModel {
             FROM messages
             INNER JOIN users ON messages.user_id = users.id
             WHERE messages.channel_id = ?
-            ORDER BY messages.sent_at ASC
+            ORDER BY messages.sent_at DESC
+            LIMIT 50
         `;
 
         db.query(sql, [channelId], (err, results) => {
             if (err) return callback(err, null);
-            callback(null, results);
+            callback(null, results.reverse());
         });
     }
 }

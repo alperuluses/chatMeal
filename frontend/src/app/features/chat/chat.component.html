@@ -1,7 +1,4 @@
 <section class="chat" >
-  `<div class="voice-chat">
-    <button (click)="callAgain()">Start Call</button>
-  </div>`
     <div class="chat-header">
       <span [ngClass]="{'d-none':mobileCheckService.isMobile() === false}" (click)="sendData()"><i class="bi bi-arrow-left"></i>BACK</span>
       <h2>{{ channelName }}</h2>
@@ -9,7 +6,8 @@
 
     <div class="messages" #chat>
       <div *ngFor="let message of messages" class="message">
-        <strong>{{ message.username }}:</strong> {{ message.content }}
+        <span><strong>{{ message.username }}:</strong> {{ message.content }}</span> 
+        <span class="message-date">{{formatDate(message.sent_at) }}</span>
       </div>
     </div>
     <div class="form">

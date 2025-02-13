@@ -1,86 +1,90 @@
-:host{
-    width: 60%;
+:host {
+  width: 60%;
 }
 
-
-
 .chat {
-    width: 100%;
-    padding: 1rem;
-    height:90%;
-  
-    h2 {
-      color: #6d5dfc;
-      font-size: 1.2rem;
+  width: 100%;
+  padding: 1rem;
+  height: 90%;
+
+  h2 {
+    color: #6d5dfc;
+    font-size: 1.2rem;
+  }
+
+  .messages {
+    height: 100%;
+    overflow-y: auto;
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .message {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid #333;
+    color: #d1d1d1;
+
+    .message-date{
+      color: gray;
+      font-size: 13px;
+      font-weight: 700;
     }
-  
-    .messages {
-      height: 100%;
-      overflow-y: auto;
-      background: #1e1e1e;
+  }
+
+  .form {
+    display: flex;
+
+    input {
+      flex: 1;
       padding: 10px;
       border-radius: 6px;
-      margin-bottom: 10px;
+      border: 1px solid #444;
+      background: #2b2b2b;
+      color: #fff;
+      margin-right: 10px;
     }
-  
-    .message {
-      padding: 8px;
-      border-bottom: 1px solid #333;
-      color: #d1d1d1;
+
+    button {
+      background: #6d5dfc;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+
+      &:hover {
+        background: #5a4df0;
+      }
     }
-  
-    .form {
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    width: 100% !important;
+    h2 {
       display: flex;
-  
-      input {
-        flex: 1;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #444;
-        background: #2b2b2b;
-        color: #fff;
-        margin-right: 10px;
-      }
-  
-      button {
-        background: #6d5dfc;
-        border: none;
-        padding: 10px;
-        border-radius: 6px;
-        color: #fff;
-        cursor: pointer;
-        transition: 0.3s;
-  
-        &:hover {
-          background: #5a4df0;
-        }
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+
+      span {
+        color: #ffeb3b;
       }
     }
   }
 
-  
-  @media (max-width: 768px) {
-    :host{
-      width: 100% !important;
-      h2{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .chat-header{
-        display: flex;
-        justify-content: space-between;
-
-        span{
-          color: #FFEB3B;
-        }
-      }
-
-    }
-
-    .chat{
-      height: 80%;
-    }
+  .chat {
+    height: 80%;
   }
-  
+}

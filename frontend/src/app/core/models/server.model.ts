@@ -10,7 +10,12 @@ export interface Server {
   }
   
 
-  export interface Messages{
-    content:string;
-    username:string;
-}
+  export interface Messages {
+    id?: number;
+    channel_id?: number;
+    user_id?: number;
+    content?: string;
+    sent_at?: string;
+    username?: string;
+  }
+  
