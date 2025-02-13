@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-    origin: ['https://chatmeal.netlify.app', 'http://localhost:8080',"http://192.168.1.21:8080"],
+    origin: ['https://chatmeal.netlify.app', 'http://localhost:8080',"http://192.168.1.21:8080","https://chat-meal.vercel.app"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   };
   
