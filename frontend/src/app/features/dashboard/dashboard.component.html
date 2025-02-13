@@ -39,11 +39,14 @@
               </li>
 
             </ul>
-
-            <div>
-              <button (click)="mute()">Mute</button>
-              <span>{{muteStatus ? '🔊' : '🔇'}}</span>
+            <div class="d-flex align-items-center justify-content-center">
+              <button (click)="mute()"
+              class="mic-toggle-button"
+              [class.muted]="!muteStatus">
+              <i class="bi" [ngClass]="muteStatus ? 'bi-mic-fill' : 'bi-mic-mute-fill'"></i>
+            </button>
             </div>
+
           </section>
         </ng-container>
       </div>

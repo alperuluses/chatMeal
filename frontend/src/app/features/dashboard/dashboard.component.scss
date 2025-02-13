@@ -172,6 +172,42 @@
     }
   }
 
+  .mic-toggle-button {
+    background-color: #2b2d31;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+  
+    i {
+      font-size: 24px;
+      color: #ffffff;
+      transition: color 0.2s;
+    }
+  
+    &:hover {
+      background-color: #404249;
+    }
+  
+    &:active {
+      transform: scale(0.95);
+    }
+  
+    &.muted {
+      background-color: #ed4245;
+  
+      i {
+        color: #ffffff;
+      }
+    }
+  }
+  
+
   @media (max-width: 768px) {
 
       .sidebar {

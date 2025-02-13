@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChatComponent } from '../chat/chat.component';
 import { ServerService } from '../../core/services/server/server.service';
@@ -144,6 +144,13 @@ export class DashboardComponent implements OnInit {
   mute(){
     this.muteStatus = !this.muteStatus
     this.voiceChatService.stopSpeakingDetection(this.muteStatus)
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.key.toLowerCase() === 'k') {
+      this.mute();
+    }
   }
 
 }
