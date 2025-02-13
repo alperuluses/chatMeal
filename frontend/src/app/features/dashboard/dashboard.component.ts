@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit {
   chatDisplayStatus:boolean = false;
   serversDisplayStatus:boolean = true;
   isSpeaking = false;
+  muteStatus = true;
 
   constructor(
     private serverService: ServerService,
@@ -140,5 +141,10 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+
+  mute(status:boolean){
+    this.muteStatus = !this.muteStatus;
+    this.voiceChatService.stopSpeakingDetection(this.muteStatus);
+  }
 
 }
