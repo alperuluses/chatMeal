@@ -10,6 +10,7 @@ import { Channel } from '../../core/models/channel.model';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth-service';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
+import { AudioDetectorService } from '../../core/services/voice-chat/audio-detector.service';
 import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
 
 
@@ -36,6 +37,7 @@ export class DashboardComponent implements OnInit {
 
   chatDisplayStatus:boolean = false;
   serversDisplayStatus:boolean = true;
+  isSpeaking = false;
 
   constructor(
     private serverService: ServerService,
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnInit {
     private socketService: SocketService,
     private authService: AuthService,
     public mobileCheckService:MobileCheckService,
+    private audioDetector: AudioDetectorService,
     private voiceChatService:VoiceChatService
   ) {}
 
@@ -53,6 +56,20 @@ export class DashboardComponent implements OnInit {
       this.usersInChannel = users;
       console.log("Kullanıcı listesi güncellendi:", users); 
     });
+  }
+
+  startAudioAnalysis() {
+    // Kullanıcı etkileşimi ile mikrofon erişimini başlat
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        this.audioDetector.analyzeStream(stream, (isSpeaking) => {
+          this.isSpeaking = isSpeaking;
+        });
+      })
+      .catch((error) => {
+        console.error('Mikrofon erişimi reddedildi veya hata oluştu:', error);
+      });
   }
 
   getAllServers(): void {
@@ -93,6 +110,7 @@ export class DashboardComponent implements OnInit {
     console.log("Previous", this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]);
     
     this.socketService.joinRoom(channel.id,this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]); // Yeni odaya giriş
+    this.startAudioAnalysis()
     this.toggleStatus()
     this.channelChange.next(channel);
     }

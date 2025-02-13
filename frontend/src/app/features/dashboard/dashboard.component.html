@@ -31,7 +31,7 @@
                   <ng-container *ngIf="usersInChannel?.[channel.id]">
                     <li *ngFor="let user of usersInChannel[channel.id]">
                       <i class="bi bi-person-fill"></i>
-                      {{ user }}
+                      {{ user }} {{ isSpeaking ? '🔊' : ''}}
                     </li>
                   </ng-container>
 
