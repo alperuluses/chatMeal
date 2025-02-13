@@ -84,7 +84,9 @@ export class DashboardComponent implements OnInit {
   }
 
   selectChannel(channel: Channel): void {
+    //Voice initialize when selected a channel
     this.voiceChatService.initialize()
+    
     console.log("Kanal değiştirildi:", channel);
     this.previousChannelId.push(channel.id);
     let token = this.authService.getToken();
