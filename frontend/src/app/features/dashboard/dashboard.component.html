@@ -39,6 +39,11 @@
               </li>
 
             </ul>
+
+            <div>
+              <button (click)="mute()">Mute</button>
+              <span>{{muteStatus ? '🔊' : '🔇'}}</span>
+            </div>
           </section>
         </ng-container>
       </div>

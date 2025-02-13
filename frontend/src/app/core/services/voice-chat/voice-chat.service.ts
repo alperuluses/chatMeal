@@ -117,4 +117,12 @@ export class VoiceChatService {
     document.body.appendChild(audio);
     console.log('Audio stream added');
   }
+
+  public stopSpeakingDetection(muteStatus:boolean) {
+    if (muteStatus) {
+     this.myStream.getAudioTracks()[0].enabled = true;
+    }else{
+      this.myStream.getAudioTracks()[0].enabled = false;
+    }
+  }
 }
