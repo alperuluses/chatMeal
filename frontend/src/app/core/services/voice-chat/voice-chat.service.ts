@@ -19,6 +19,7 @@ export class VoiceChatService {
 
     this.socket.on('user-connected', async (userId) => {
       console.log('🟢 Yeni kullanıcı bağlandı:', userId);
+      this.playJoinSound(); // Giriş sesi çal
       if (this.myStream && this.peer.id < userId) { // Peer ID'si küçük olan arama başlatır
         this.callUser(userId);
       } else {
@@ -124,5 +125,14 @@ export class VoiceChatService {
     }else{
       this.myStream.getAudioTracks()[0].enabled = false;
     }
+  }
+
+  playJoinSound() {
+    const audio = new Audio('assets/sounds/join-sound.mp3');
+    audio.muted = true;
+    audio.play().then(() => {
+      audio.muted = false; // Ses açılıyor
+    }).catch(err => console.error('Ses çalarken hata oluştu:', err));
+    
   }
 }
