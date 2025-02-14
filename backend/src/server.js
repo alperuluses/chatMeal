@@ -20,6 +20,11 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
+// Healthcheck Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Kullanıcı API
 app.use('/api/auth', authRoutes);
 
