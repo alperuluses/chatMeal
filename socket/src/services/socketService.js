@@ -88,7 +88,7 @@ const initializeSocket = (server) => {
       }
       rooms[roomId].push(userId);
       socket.join(roomId);
-      socket.to(roomId).emit("user-connected", { userId: userId, socketName: socket.user.username });
+      socket.to(roomId).emit("user-connected", userId);
     });
 
     socket.on("emitUserList", () => {

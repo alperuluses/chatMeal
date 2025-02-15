@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { Socket } from 'socket.io-client';
 import Peer from 'peerjs';
 import { SocketService } from '../socket.service';
-import { AuthService } from '../auth-service';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChatService {
@@ -12,19 +11,19 @@ export class VoiceChatService {
   private myStream!: MediaStream;
   private peers: { [id: string]: any } = {};
 
-  constructor(private socketService:SocketService,private authService:AuthService) {
+  constructor(private socketService:SocketService) {
     this.socket = this.socketService.getIo();
     this.socket.on('connect', () => {
       console.log('✅ Socket.io bağlantısı başarılı');
     });
 
-    this.socket.on('user-connected', async (data) => {
-      console.log('🟢 Yeni kullanıcı bağlandı:', data.userId, data.socketName);
+    this.socket.on('user-connected', async (userId) => {
+      console.log('🟢 Yeni kullanıcı bağlandı:', userId);
       this.playJoinSound(); // Giriş sesi çal
-      if (this.myStream && this.peer.id < data.userId) { // Peer ID'si küçük olan arama başlatır
-        this.callUser(data.userId);
+      if (this.myStream && this.peer.id < userId) { // Peer ID'si küçük olan arama başlatır
+        this.callUser(userId);
       } else {
-        this.callUser(data.userId);
+        this.callUser(userId);
         console.warn('⚠️ Media stream henüz hazır değil');
       }
     })
@@ -42,13 +41,7 @@ export class VoiceChatService {
     try {
       const peerId = await this.initPeer();
       await this.initMedia();
-      let token = this.authService.getToken();
-      if (token) {
-        this.socketService.authenticate(token);
-        this.socket.emit('join-room', 'test-room', peerId);
-      } else {
-        console.error('❌ Authentication token is null');
-      }
+      this.socket.emit('join-room', 'test-room', peerId);
     } catch (error) {
       console.error('❌ Peer başlatma hatası:', error);
     }
