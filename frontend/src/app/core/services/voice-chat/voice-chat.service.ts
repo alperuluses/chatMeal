@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Socket } from 'socket.io-client';
 import Peer from 'peerjs';
 import { SocketService } from '../socket.service';
+import { AuthService } from '../auth-service';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChatService {
@@ -11,7 +12,7 @@ export class VoiceChatService {
   private myStream!: MediaStream;
   private peers: { [id: string]: any } = {};
 
-  constructor(private socketService:SocketService) {
+  constructor(private socketService:SocketService,private authService:AuthService) {
     this.socket = this.socketService.getIo();
     this.socket.on('connect', () => {
       console.log('✅ Socket.io bağlantısı başarılı');
@@ -41,7 +42,13 @@ export class VoiceChatService {
     try {
       const peerId = await this.initPeer();
       await this.initMedia();
-      this.socket.emit('join-room', 'test-room', peerId);
+      let token = this.authService.getToken();
+      if (token) {
+        this.socketService.authenticate(token);
+        this.socket.emit('join-room', 'test-room', peerId);
+      } else {
+        console.error('❌ Authentication token is null');
+      }
     } catch (error) {
       console.error('❌ Peer başlatma hatası:', error);
     }
