@@ -17,13 +17,13 @@ export class VoiceChatService {
       console.log('✅ Socket.io bağlantısı başarılı');
     });
 
-    this.socket.on('user-connected', async (userId) => {
-      console.log('🟢 Yeni kullanıcı bağlandı:', userId);
+    this.socket.on('user-connected', async (data) => {
+      console.log('🟢 Yeni kullanıcı bağlandı:', data.userId, data.socketName);
       this.playJoinSound(); // Giriş sesi çal
-      if (this.myStream && this.peer.id < userId) { // Peer ID'si küçük olan arama başlatır
-        this.callUser(userId);
+      if (this.myStream && this.peer.id < data.userId) { // Peer ID'si küçük olan arama başlatır
+        this.callUser(data.userId);
       } else {
-        this.callUser(userId);
+        this.callUser(data.userId);
         console.warn('⚠️ Media stream henüz hazır değil');
       }
     })
