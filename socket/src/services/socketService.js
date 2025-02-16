@@ -35,7 +35,7 @@ const initializeSocket = (server) => {
       );
     });
 
-    socket.on('heartbeat', (user) => {
+    socket.on("heartbeat", (user) => {
       console.log(`Heartbeat alındı: ${socket.id}-${user.username}`);
     });
 
@@ -75,7 +75,7 @@ const initializeSocket = (server) => {
         leavePreviousChannel(previousChannelId);
 
         updateActiveUserWithRoom(roomId, previousChannelId);
-        
+
         socket.join(roomId);
         console.log(
           `${
@@ -130,8 +130,16 @@ const initializeSocket = (server) => {
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (reason) => {
       const user = users[socket.id]; // Kullanıcı bilgisini al
+      const disconnectReason = "";
+      if (reason === "io client disconnect") {
+        disconnectReason = "Kullanıcı kendi isteğiyle çıktı.";
+      } else if (reason === "ping timeout") {
+        disconnectReason = "Kullanıcı bağlantı sorunu yaşadı.";
+      } else if (reason === "transport close") {
+        disconnectReason = "Tarayıcı kapandı veya ağ bağlantısı kesildi.";
+      }
 
       if (user) {
         console.log(`Kullanıcı ayrıldı: ${user.username}`);
@@ -140,7 +148,7 @@ const initializeSocket = (server) => {
         for (const roomId in usersInRooms) {
           if (usersInRooms[roomId].includes(user.username)) {
             console.log(
-              `Kullanıcı ${user.username}, ${roomId} odasından ayrıldı.`
+              `Kullanıcı ${user.username}, ${roomId} odasından ayrıldı. Sebep: ${disconnectReason}`
             );
 
             // Kullanıcıyı odadan çıkar
