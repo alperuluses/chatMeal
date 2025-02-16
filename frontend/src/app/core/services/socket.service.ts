@@ -10,6 +10,7 @@ export class SocketService {
   private socket: Socket;
   private readonly serverUrl: string;
   private currentRoom: string | null = null; // Kullanıcının bulunduğu oda
+  private heartBeatInterval: any = null;
 
   constructor(private apiUrlService: ApiUrlService, private authService: AuthService) {
     this.serverUrl = this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
@@ -17,7 +18,11 @@ export class SocketService {
   }
 
   getIo() {
-    return io(this.serverUrl);
+    return io(this.serverUrl, {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
   }
 
   on(event: string, callback: (data: any) => void) {
@@ -83,7 +88,13 @@ export class SocketService {
   }
 
   heartBeat() {
-    setInterval(() => {
+    // Önceki interval varsa iptal et
+    if (this.heartBeatInterval) {
+      clearInterval(this.heartBeatInterval);
+    }
+
+    // Yeni interval başlat
+    this.heartBeatInterval = setInterval(() => {
       const user = this.authService.currentUser;
       if (user) {
         this.socket.emit('heartbeat', { username: user.username });
