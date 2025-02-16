@@ -35,6 +35,10 @@ const initializeSocket = (server) => {
       );
     });
 
+    socket.on('heartbeat', (user) => {
+      console.log(`Heartbeat alındı: ${socket.id}-${user.username}`);
+    });
+
     function leavePreviousChannel(previousChannelId) {
       if (previousChannelId) {
         socket.leave(previousChannelId);

@@ -37,7 +37,46 @@ exports.login = (req, res) => {
         SECRET_KEY,
         { expiresIn: "24h" }
       );
-      res.json({ token, username: user.username });
+      res.json({
+        token,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        created_at: user.created_at,
+      });
+    });
+  });
+};
+
+exports.me = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Token bulunamadı" });
+  }
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Geçersiz token" });
+    }
+
+    User.findById(decoded.id, (err, user) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ message: "Veritabanı hatası", error: err });
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+      }
+
+      res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        created_at: user.created_at,
+      });
     });
   });
 };

@@ -14,7 +14,7 @@ import { ButtonComponent } from "../../../shared/components/button/button.compon
   imports: [ReactiveFormsModule, CommonModule, RouterModule, ButtonComponent],
   providers: [AuthService]
 })
-export class LoginComponent  {
+export class LoginComponent {
   loginForm = new FormGroup({
     username: new FormControl('', [Validators.required]),  // Kullanıcı adı zorunlu
     password: new FormControl('', [Validators.required])   // Şifre zorunlu
@@ -29,20 +29,19 @@ export class LoginComponent  {
     }
 
     const credentials = {
-      email:this.loginForm.value.username,
-      password:this.loginForm.value.password  
+      email: this.loginForm.value.username,
+      password: this.loginForm.value.password
     }
 
-    if(credentials.email && credentials.password){
-      this.authService.login(credentials.email,credentials.password).subscribe(
-        (response) => {
-          this.authService.setToken(response.token);  // Token'ı sakla
-          this.router.navigate(['/dashboard']);  // Dashboard'a yönlendir
+    if (credentials.email && credentials.password) {
+      this.authService.login(credentials.email, credentials.password).subscribe({
+        next: (user) => {
+          this.router.navigate(['/dashboard']);
         },
-        (error) => {
-          this.errorMessage = 'Geçersiz kullanıcı adı veya şifre';  // Hata mesajı göster
+        error: (error) => {
+          this.errorMessage = 'Geçersiz kullanıcı adı veya şifre';
         }
-      );
+      });
     }
 
 

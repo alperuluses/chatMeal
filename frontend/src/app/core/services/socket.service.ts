@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { ApiUrlService } from './api-url.service';
+import { AuthService } from './auth-service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,12 +11,12 @@ export class SocketService {
   private readonly serverUrl: string;
   private currentRoom: string | null = null; // Kullanıcının bulunduğu oda
 
-  constructor(private apiUrlService:ApiUrlService) {
-    this.serverUrl= this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
+  constructor(private apiUrlService: ApiUrlService, private authService: AuthService) {
+    this.serverUrl = this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
     this.socket = this.getIo()
   }
 
-  getIo(){
+  getIo() {
     return io(this.serverUrl);
   }
 
@@ -25,7 +26,7 @@ export class SocketService {
 
   emit(event: string, data: any) {
     console.log(data);
-    
+
     this.socket.emit(event, data);
   }
 
@@ -35,13 +36,14 @@ export class SocketService {
   }
 
   // Kullanıcı odaya girerken önceki odadan çıkart
-  joinRoom(channelId: string, previousChannelId:string) {
+  joinRoom(channelId: string, previousChannelId: string) {
+    this.heartBeat()
     if (this.currentRoom) {
       this.leaveRoom(); // Önceki odadan çık
     }
 
     console.log("Join room FE:", channelId);
-    this.socket.emit('joinChannel', channelId,previousChannelId);
+    this.socket.emit('joinChannel', channelId, previousChannelId);
     this.currentRoom = channelId;
   }
 
@@ -76,7 +78,16 @@ export class SocketService {
     this.socket.on('updateUserList', callback);
   }
 
-  emitUserList(){
+  emitUserList() {
     this.socket.emit("emitUserList")
+  }
+
+  heartBeat() {
+    setInterval(() => {
+      const user = this.authService.currentUser;
+      if (user) {
+        this.socket.emit('heartbeat', { username: user.username });
+      }
+    }, 10000);
   }
 }
