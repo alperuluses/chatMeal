@@ -132,7 +132,7 @@ const initializeSocket = (server) => {
 
     socket.on("disconnect", (reason) => {
       const user = users[socket.id]; // Kullanıcı bilgisini al
-      const disconnectReason = "";
+      let disconnectReason = "";
       if (reason === "io client disconnect") {
         disconnectReason = "Kullanıcı kendi isteğiyle çıktı.";
       } else if (reason === "ping timeout") {
