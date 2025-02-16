@@ -103,8 +103,7 @@ export class DashboardComponent implements OnInit {
   }
 
   selectChannel(channel: Channel): void {
-    //Voice initialize when selected a channel
-    this.voiceChatService.initialize()
+
 
     console.log("Kanal değiştirildi:", channel);
     this.previousChannelId.push(channel.id);
@@ -115,6 +114,8 @@ export class DashboardComponent implements OnInit {
 
       this.socketService.joinRoom(channel.id, this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]); // Yeni odaya giriş
       this.startAudioAnalysis()
+          //Voice initialize when selected a channel
+    this.voiceChatService.initialize(`${channel.id}-voice`, this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length])
       this.toggleStatus()
       this.channelChange.next(channel);
     }

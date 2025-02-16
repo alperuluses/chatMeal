@@ -25,6 +25,10 @@ export class SocketService {
     });
   }
 
+  getSocket(){
+    return this.socket;
+  }
+
   on(event: string, callback: (data: any) => void) {
     this.socket.on(event, callback);
   }

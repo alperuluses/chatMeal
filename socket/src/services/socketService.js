@@ -67,7 +67,7 @@ const initializeSocket = (server) => {
     }
 
     // Odaya giriş
-    socket.on("joinChannel", (roomId, previousChannelId) => {
+    socket.on("joinChannel", (roomId, previousChannelId, userId) => {
       console.log("Odaya katılma isteği:", roomId);
 
       if (socket.user) {
@@ -83,16 +83,11 @@ const initializeSocket = (server) => {
           } odasına katıldı: ${roomId} - ${typeof roomId}`
         );
         socket.emit("roomJoined", `Odaya katıldınız: ${roomId}`);
+        if (userId) {
+          socket.join(roomId);
+          socket.to(roomId).emit("user-connected", userId);
+        }
       }
-    });
-
-    socket.on("join-room", (roomId, userId) => {
-      if (!rooms[roomId]) {
-        rooms[roomId] = [];
-      }
-      rooms[roomId].push(userId);
-      socket.join(roomId);
-      socket.to(roomId).emit("user-connected", userId);
     });
 
     socket.on("emitUserList", () => {
