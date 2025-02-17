@@ -141,7 +141,7 @@ export class VoiceChatService {
   }
 
   playJoinSound() {
-    const audio = new Audio('assets/sounds/join-sound.mp3');
+    const audio = new Audio('assets/sounds/adam-geldi.mp3');
     audio.muted = true;
     audio.play().then(() => {
       audio.muted = false; // Ses açılıyor
