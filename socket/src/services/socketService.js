@@ -51,11 +51,11 @@ const initializeSocket = (server) => {
       }
 
       console.log("Önceki odanın idsi:", previousChannelId);
+      console.log("Update user:", usersInRooms[previousChannelId]);
+      
 
-      if (previousChannelId) {
-        usersInRooms[previousChannelId] = usersInRooms[
-          previousChannelId
-        ].filter((user) => user !== socket.user.username);
+      if (previousChannelId && usersInRooms[previousChannelId]) {
+        usersInRooms[previousChannelId] = usersInRooms[previousChannelId].filter((user) => user !== socket.user.username);
       }
 
       //Kullanıyı gireceği odaya ekleme
@@ -84,7 +84,6 @@ const initializeSocket = (server) => {
         );
         socket.emit("roomJoined", `Odaya katıldınız: ${roomId}`);
         if (userId) {
-          socket.join(roomId);
           socket.to(roomId).emit("user-connected", userId);
         }
       }
@@ -124,6 +123,11 @@ const initializeSocket = (server) => {
         socket.emit("error", "Odaya katılmadınız.");
       }
     });
+
+    socket.on("user-destroyed",(roomId,peerId) => {
+      socket.to(roomId).emit("user-destroyed", peerId);
+      console.log("user-destroyed",`${peerId} - ${roomId}`)
+    })
 
     socket.on("disconnect", (reason) => {
       const user = users[socket.id]; // Kullanıcı bilgisini al

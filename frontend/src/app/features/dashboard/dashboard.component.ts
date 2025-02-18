@@ -40,6 +40,8 @@ export class DashboardComponent implements OnInit {
   isSpeaking = false;
   muteStatus: boolean = true;
 
+  isScreenSharing = false;
+
   constructor(
     private serverService: ServerService,
     private channelService: ChannelService,
@@ -103,20 +105,18 @@ export class DashboardComponent implements OnInit {
   }
 
   selectChannel(channel: Channel): void {
-
-
     console.log("Kanal değiştirildi:", channel);
     this.previousChannelId.push(channel.id);
     let token = this.authService.getToken();
     if (channel.id && token) {
       this.socketService.authenticate(token); // Kullanıcıyı doğrula
-      let previousChannelId = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
-      console.log("Previous", previousChannelId);
+      let previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
+      console.log("Previous", previousChannelIdNew);
 
-      this.socketService.joinRoom(channel.id, previousChannelId); // Yeni odaya giriş
+      this.socketService.joinRoom(channel.id, previousChannelIdNew); // Yeni odaya giriş
       this.startAudioAnalysis()
           //Voice initialize when selected a channel
-    this.voiceChatService.initialize(`${channel.id}-voice`,`${previousChannelId}-voice`)
+    this.voiceChatService.initialize(`${channel.id}-voice`,`${previousChannelIdNew}-voice`)
       this.toggleStatus()
       this.channelChange.next(channel);
     }
@@ -154,6 +154,21 @@ export class DashboardComponent implements OnInit {
     if (event.key.toLowerCase() === 'k') {
       this.mute();
     }
+  }  
+
+
+
+toggleScreenShare() {
+  if (this.isScreenSharing) {
+    this.voiceChatService.stopScreenShare();
+    this.isScreenSharing = false;
+  } else {
+    this.voiceChatService.startScreenShare().then((stream) => {
+      if (stream) {
+        this.isScreenSharing = true;
+      }
+    });
   }
+}
 
 }

@@ -1,75 +1,101 @@
 <div class="dashboard-container">
-    <!-- Sol Menü: Kanallar -->
-     <div class="servers-container" [ngClass]="{'d-none':chatDisplayStatus && this.mobileCheckService.isMobile() === true}">
-        <aside class="sidebar">
-          <div class="sidebar-header">
-            <h2>Sunucular</h2>
-            <button class="add-channel-btn" (click)="openAddServerModal()"><i class="bi bi-patch-plus-fill"></i></button>
-          </div>
-          
-          <ul>
-            <li *ngFor="let server of serverList" 
-                [class.active]="selectedServer === server.id" 
-                (click)="selectServer(server)">
-                
-                <span>
-                  <i class="bi bi-chat-left-text-fill"></i>
-                  {{ server.name }}
-                </span> 
-            </li>
-          </ul>
-        </aside>
-          <!-- Orta Bölüm: Odalar -->
-        <ng-container *ngIf="channels | async as channels">
-          <section class="rooms" *ngIf="channels.length > 0">
-            <h2>Odalar</h2>
-            <ul>
-              <li *ngFor="let channel of channels" 
-                  (click)="selectChannel(channel)">
-                {{ channel.name }}<span class="text-success p-1">({{ channel.id ? (usersInChannel?.[channel.id]?.length || 0) : 0 }})</span>
-                <ul *ngIf="channel.id">
-                  <ng-container *ngIf="usersInChannel?.[channel.id]">
-                    <li *ngFor="let user of usersInChannel[channel.id]">
-                      <i class="bi bi-person-fill"></i>
-                      {{ user }} {{ isSpeaking ? '🔊' : ''}}
-                    </li>
-                  </ng-container>
+  <!-- Sol Menü: Kanallar -->
+  <div
+    class="servers-container"
+    [ngClass]="{
+      'd-none': chatDisplayStatus && this.mobileCheckService.isMobile() === true
+    }"
+  >
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Sunucular</h2>
+        <button class="add-channel-btn" (click)="openAddServerModal()">
+          <i class="bi bi-patch-plus-fill"></i>
+        </button>
+      </div>
 
-                </ul>
-              </li>
+      <ul>
+        <li
+          *ngFor="let server of serverList"
+          [class.active]="selectedServer === server.id"
+          (click)="selectServer(server)"
+        >
+          <span>
+            <i class="bi bi-chat-left-text-fill"></i>
+            {{ server.name }}
+          </span>
+        </li>
+      </ul>
+    </aside>
+    <!-- Orta Bölüm: Odalar -->
+    <ng-container *ngIf="channels | async as channels">
+      <section class="rooms" *ngIf="channels.length > 0">
+        <h2>Odalar</h2>
+        <ul>
+          <li *ngFor="let channel of channels" (click)="selectChannel(channel)">
+            {{ channel.name
+            }}<span class="text-success p-1"
+              >({{ channel.id ? (usersInChannel?.[channel.id]?.length || 0) : 0
 
+              }})</span
+            >
+            <ul *ngIf="channel.id">
+              <ng-container *ngIf="usersInChannel?.[channel.id]">
+                <li *ngFor="let user of usersInChannel[channel.id]">
+                  <i class="bi bi-person-fill"></i>
+                  {{ user }} {{ isSpeaking ? "🔊" : "" }}
+                </li>
+              </ng-container>
             </ul>
-            <div class="d-flex align-items-center justify-content-center">
-              <button (click)="mute()"
-              class="mic-toggle-button"
-              [class.muted]="!muteStatus">
-              <i class="bi" [ngClass]="muteStatus ? 'bi-mic-fill' : 'bi-mic-mute-fill'"></i>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center justify-content-center">
+          <!-- Mute Button -->
+          <button
+            (click)="mute()"
+            class="mic-toggle-button"
+            [class.muted]="!muteStatus"
+          >
+            <i
+              class="bi"
+              [ngClass]="muteStatus ? 'bi-mic-fill' : 'bi-mic-mute-fill'"
+            ></i>
+          </button>
+            <!-- Share Screen Button -->
+            <button (click)="toggleScreenShare()" class="screen-share-button" [class.active]="isScreenSharing">
+              <i class="bi" [ngClass]="isScreenSharing ? 'bi-display-fill' : 'bi-display'"></i>
             </button>
-            </div>
-
-          </section>
-        </ng-container>
-      </div>
-
-  
-
-  
-    <!-- Sağ Bölüm: Mesajlaşma Alanı -->
-     <ng-container *ngIf="channelChange$ | async as selectedChannel">
-      <app-chat (backStatus)="toggleStatus()" [ngClass]="{ 'd-none': !chatDisplayStatus && this.mobileCheckService.isMobile() === true}"   [channelId]="selectedChannel.id" [channelName]="selectedChannel.name"></app-chat>
-     </ng-container>
-    
+        </div>
+      </section>
+    </ng-container>
   </div>
-  
-  <!-- Modal: Kanal Ekleme -->
-  <div *ngIf="showAddServerModal" class="modal-overlay">
-    <div class="modal-channel-add">
-      <h3>Yeni Kanal Ekle</h3>
-      <input type="text" [(ngModel)]="newServerName" placeholder="Kanal adı girin..." />
-      <div class="modal-buttons">
-        <button class="btn-save" (click)="addServer()">Ekle</button>
-        <button class="btn-cancel" (click)="closeAddServerModal()">İptal</button>
-      </div>
+
+  <!-- Sağ Bölüm: Mesajlaşma Alanı -->
+  <ng-container *ngIf="channelChange$ | async as selectedChannel">
+    <app-chat
+      (backStatus)="toggleStatus()"
+      [ngClass]="{
+        'd-none':
+          !chatDisplayStatus && this.mobileCheckService.isMobile() === true
+      }"
+      [channelId]="selectedChannel.id"
+      [channelName]="selectedChannel.name"
+    ></app-chat>
+  </ng-container>
+</div>
+
+<!-- Modal: Kanal Ekleme -->
+<div *ngIf="showAddServerModal" class="modal-overlay">
+  <div class="modal-channel-add">
+    <h3>Yeni Kanal Ekle</h3>
+    <input
+      type="text"
+      [(ngModel)]="newServerName"
+      placeholder="Kanal adı girin..."
+    />
+    <div class="modal-buttons">
+      <button class="btn-save" (click)="addServer()">Ekle</button>
+      <button class="btn-cancel" (click)="closeAddServerModal()">İptal</button>
     </div>
   </div>
-  
+</div>
