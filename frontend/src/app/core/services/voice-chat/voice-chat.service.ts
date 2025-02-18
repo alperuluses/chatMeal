@@ -142,42 +142,50 @@ export class VoiceChatService {
   }
 
   deleteMedia(peerId: string) {
-    let isMediaExist = document.getElementById(peerId)
+    const audioElement = document.getElementById(`audio-${peerId}`);
+    const videoElement = document.getElementById(`video-${peerId}`);
 
-    if (isMediaExist) {
-      isMediaExist.remove()
+    if (audioElement) {
+      audioElement.remove();
+      console.log(`🗑️ Ses kaldırıldı: audio-${peerId}`);
+    }
+
+    if (videoElement) {
+      videoElement.remove();
+      console.log(`🗑️ Video kaldırıldı: video-${peerId}`);
     }
   }
-
   addAudioStream(stream: MediaStream, peerId: string) {
-    this.deleteMedia(peerId)
+    this.deleteMedia(peerId); // Önce varsa aynı peerId için audio/video kaldırılır
+
     const audioTracks = stream.getAudioTracks();
     const videoTracks = stream.getVideoTracks();
 
     if (audioTracks.length > 0) {
       const audio = document.createElement('audio');
-      audio.id = peerId;
+      audio.id = `audio-${peerId}`;
       audio.srcObject = stream;
       audio.autoplay = true;
       document.body.appendChild(audio);
-      console.log('🔊 Ses eklendi');
+      console.log(`🔊 Ses eklendi: audio-${peerId}`);
     }
 
     if (videoTracks.length > 0) {
       const video = document.createElement('video');
-      video.id = peerId;
+      video.id = `video-${peerId}`;
       video.srcObject = stream;
       video.autoplay = true;
       video.style.width = '90%';
-      video.style.maxHeight = '500px'
+      video.style.maxHeight = '500px';
       video.style.border = '2px solid #6d5dfc';
       video.style.margin = '10px';
       video.style.borderRadius = '8px';
       video.style.backgroundColor = 'black';
       document.body.prepend(video);
-      console.log('📺 Video (Ekran paylaşımı) eklendi');
+      console.log(`📺 Video eklendi: video-${peerId}`);
     }
   }
+
 
   public stopSpeakingDetection(muteStatus: boolean) {
     let getAudioTracks = this.myStream.getAudioTracks()[0]
@@ -209,16 +217,22 @@ export class VoiceChatService {
 
   // Bağlı olan tüm peer'ları almak için getPeers() metodunu kullanın
   async startScreenShare(): Promise<MediaStream> {
-    this.myStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+    const combinedStream = new MediaStream([
+      ...screenStream.getVideoTracks(),
+      ...audioStream.getAudioTracks(),
+    ]);
+
+    this.myStream = combinedStream;
     this.callAllConnectedPeers();
 
     console.log('Bağlı olan kullanıcılar:', this.connectedPeers);
 
-
-
     return this.myStream;
   }
+
 
 
   async stopScreenShare() {
