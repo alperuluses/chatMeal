@@ -222,6 +222,7 @@ export class VoiceChatService {
 
 
   async stopScreenShare() {
+    await this.myStream.getTracks().forEach(track => track.stop());
     await this.initMedia()
     this.callAllConnectedPeers();
   }
