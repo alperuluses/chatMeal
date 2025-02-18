@@ -209,7 +209,7 @@ export class VoiceChatService {
 
   // Bağlı olan tüm peer'ları almak için getPeers() metodunu kullanın
   async startScreenShare(): Promise<MediaStream> {
-    this.myStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    this.myStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
 
     this.callAllConnectedPeers();
 
