@@ -18,6 +18,7 @@ import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.serv
 export class ChatComponent implements OnInit, OnChanges {
   messages: Messages[] = [];
   message: string = '';
+  shouldScroll: boolean = true;
 
   @Input() channelId: string | undefined = undefined; // Seçili kanal ID'si
   @Input() channelName: string | undefined = undefined; // Seçili kanal adı
@@ -45,6 +46,7 @@ export class ChatComponent implements OnInit, OnChanges {
     this.socketService.onMessage((messageData) => {
       messageData.content = messageData.message;
       this.messages.push(messageData);
+      this.shouldScroll = true;  // Yeni mesaj geldiğinde kaydır
     });
 
     if (this.channelId) {
@@ -52,9 +54,18 @@ export class ChatComponent implements OnInit, OnChanges {
     }
   }
 
+  ngAfterViewChecked(): void {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false; // Sürekli kaydırmayı engelle
+    }
+  }
+  
+
   setMessages(channelId: string): void {
     this.channelService.getAllMessagesWithChannel(channelId).subscribe((messages) => {
       this.messages = messages;
+      this.shouldScroll = true; // Yeni mesajlar alındığında kaydır
     });
   }
 
@@ -62,6 +73,7 @@ export class ChatComponent implements OnInit, OnChanges {
     if (changes['channelId'] && this.channelId) {
       this.setMessages(this.channelId);
       this.messages = [];
+      this.shouldScroll = true; // Kanal değiştiğinde kaydır
     }
   }
 
@@ -69,17 +81,8 @@ export class ChatComponent implements OnInit, OnChanges {
     if (this.message.trim()) {
       this.socketService.sendMessage(this.message);
       this.message = '';  // Mesaj gönderildikten sonra input temizle
+      this.shouldScroll = true; // Kullanıcı mesaj gönderdiğinde kaydır
     }
-  }
-
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
-  scrollToBottom(): void {
-    try {
-      this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
-    } catch (err) { }
   }
 
   formatDate(isoString: string | undefined): string {
@@ -97,4 +100,12 @@ export class ChatComponent implements OnInit, OnChanges {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   }
 
+
+  scrollToBottom(): void {
+    try {
+      this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
+    } catch (err) {
+      console.error("Scroll hata:", err);
+    }
+  }
 }

@@ -30,7 +30,7 @@ class MessageModel {
             INNER JOIN users ON messages.user_id = users.id
             WHERE messages.channel_id = ?
             ORDER BY messages.sent_at DESC
-            LIMIT 50
+            LIMIT 20
         `;
 
         db.query(sql, [channelId], (err, results) => {
