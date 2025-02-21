@@ -8,6 +8,8 @@ const initializeSocket = (server) => {
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
+      pingTimeout: 90000, // 20 saniye içinde cevap almazsa bağlantıyı koparır
+      pingInterval: 10000, // Her 10 saniyede bir ping gönderir
     },
   });
 
@@ -52,10 +54,11 @@ const initializeSocket = (server) => {
 
       console.log("Önceki odanın idsi:", previousChannelId);
       console.log("Update user:", usersInRooms[previousChannelId]);
-      
 
       if (previousChannelId && usersInRooms[previousChannelId]) {
-        usersInRooms[previousChannelId] = usersInRooms[previousChannelId].filter((user) => user !== socket.user.username);
+        usersInRooms[previousChannelId] = usersInRooms[
+          previousChannelId
+        ].filter((user) => user !== socket.user.username);
       }
 
       //Kullanıyı gireceği odaya ekleme
@@ -86,6 +89,31 @@ const initializeSocket = (server) => {
         if (userId) {
           socket.to(roomId).emit("user-connected", userId);
         }
+      }
+    });
+
+    // Ses odasına giriş
+    socket.on("joinVoiceChannel", (roomId, previousChannelId, userId) => {
+      console.log("Ses Odasına katılma isteği:", roomId);
+
+      if (socket.user.username && userId) {
+        //Leave previous channel if its exist
+        leavePreviousChannel(previousChannelId);
+
+        updateActiveUserWithRoom(roomId, previousChannelId);
+
+        socket.join(roomId);
+        console.log(
+          `${
+            socket.user.username
+          } odasına katıldı: ${roomId} - ${typeof roomId}`
+        );
+        socket.to(roomId).emit("user-connected", userId, socket.user.username);
+      } else {
+        console.error("Socket user veya userId yok:", [
+          socket.user.username,
+          userId,
+        ]);
       }
     });
 
@@ -124,10 +152,10 @@ const initializeSocket = (server) => {
       }
     });
 
-    socket.on("user-destroyed",(roomId,peerId) => {
-      socket.to(roomId).emit("user-destroyed", peerId);
-      console.log("user-destroyed",`${peerId} - ${roomId}`)
-    })
+    socket.on("user-destroyed", (roomId, peerId) => {
+      io.to(roomId).emit("user-destroyed", peerId);
+      console.log("user-destroyed", `${peerId} - ${roomId}`);
+    });
 
     socket.on("disconnect", (reason) => {
       const user = users[socket.id]; // Kullanıcı bilgisini al
@@ -157,7 +185,6 @@ const initializeSocket = (server) => {
 
             // Kullanıcı listesini güncelle
             io.emit("updateUserList", usersInRooms);
-            break;
           }
         }
 

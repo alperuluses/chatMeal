@@ -111,15 +111,14 @@ export class DashboardComponent implements OnInit {
     if (channel.id && token) {
       this.socketService.authenticate(token); // Kullanıcıyı doğrula
       let previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
-      console.log("Previous", previousChannelIdNew);
-
       this.socketService.joinRoom(channel.id, previousChannelIdNew); // Yeni odaya giriş
       this.startAudioAnalysis()
-          //Voice initialize when selected a channel
-    this.voiceChatService.initialize(`${channel.id}-voice`,`${previousChannelIdNew}-voice`)
+      
+      //Voice initialize when selected a channel
+      this.voiceChatService.initialize(`${channel.id}-voice`,`${previousChannelIdNew}-voice`)
       this.toggleStatus()
       this.channelChange.next(channel);
-    }
+      }
   }
 
   // Kanal ekleme modalını aç/kapat
