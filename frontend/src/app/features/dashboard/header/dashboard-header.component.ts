@@ -16,4 +16,8 @@ export class DashboardHeaderComponent {
   logout() {
     this.authService.logout();
   }
+
+  reloadPage() {
+    window.location.reload();
+  }
 }
