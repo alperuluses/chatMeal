@@ -1,11 +1,13 @@
 <!-- src/app/features/auth/register/register.component.html -->
 
-<div class="container-fluid register-general-container">
+<div class="container-fluid d-flex justify-content-center align-items-center vh-100 bg-dark">
   <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
   <div class="register-container login-cart">
-    <h2>Kayıt Ol</h2>
+    <div>
+      <img class="w-100 m-2" src="assets/logo/chatana-logo.png" alt="">
+    </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
@@ -49,10 +51,7 @@
           Şifre gerekli.
         </div>
       </div>
-
-      <button type="submit" class="btn btn-primary">
-        Kayıt Ol
-      </button>
+      <app-button [type]="'submit'"  [label]="'Kayıt Ol'" [class]="'btn-primary'"></app-button>
     </form>
 
     <div class="footer">

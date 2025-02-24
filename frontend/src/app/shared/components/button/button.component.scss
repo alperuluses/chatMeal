@@ -1,17 +1,60 @@
-/* src/app/shared/components/button/button.component.scss */
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  a {
-    color: #6d5dfc;
-    text-decoration: none;
-    font-weight: 600;
+@use "/styles/theme" as theme;
 
-    &:hover {
-      text-decoration: underline;
-    }
+@mixin button($width, $bg-color, $hover-bg, $text-color) {
+  width: $width;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $text-color;
+  background: $bg-color;
+  border: none;
+  font-weight: 600;
+  transition: background 0.3s;
+
+  &:hover {
+    background: $hover-bg;
   }
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: theme.get-color("text");
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a {
+  color: theme.get-color("secondary");
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.btn-primary {
+  width: 100%;
+  background: theme.get-color("primary");
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+
+  &:hover {
+    background: theme.get-color("secondary");
+  }
+}
+
+.logout-btn {
+  @include button('auto', theme.get-color("primary"), theme.get-color("secondary"), theme.get-color("text"));
+
+  margin-right: 20px;
+}

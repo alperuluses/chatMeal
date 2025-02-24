@@ -13,6 +13,7 @@ import { MobileCheckService } from '../../core/services/mobile-check.service';
 import { AudioDetectorService } from '../../core/services/voice-chat/audio-detector.service';
 import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
 import { User } from '../../core/models/user.model';
+import { DashboardHeaderComponent } from './header/dashboard-header.component';
 
 
 
@@ -20,7 +21,7 @@ import { User } from '../../core/models/user.model';
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [CommonModule, FormsModule, ChatComponent],
+  imports: [CommonModule, FormsModule, ChatComponent, DashboardHeaderComponent],
 })
 export class DashboardComponent implements OnInit {
 
@@ -71,11 +72,12 @@ export class DashboardComponent implements OnInit {
 
     this.socketService.onUpdateSpeakingStatus((data) => {
       console.log("onUpdateSpeakingStatus",data);
-      
-      if (!this.speakingUsers[data.channelId]) {
-        this.speakingUsers[data.channelId] = []
+      if (this.lastSpeakingStatus !== data.isSpeaking) {
+        if (!this.speakingUsers[data.channelId]) {
+          this.speakingUsers[data.channelId] = []
+        }
+        this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
       }
-      this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
     })
   }
 
