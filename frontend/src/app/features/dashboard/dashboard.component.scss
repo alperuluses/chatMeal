@@ -1,8 +1,9 @@
+@use '/styles/theme' as theme;
 // Genel Dashboard Yapısı
 .dashboard-container {
   display: flex;
   height: 100vh;
-  background: #121212;
+  background: theme.get-color("background");
 }
 
 .servers-container {
@@ -24,7 +25,7 @@
   }
 
   .add-channel-btn {
-    background: #6d5dfc;
+    background: theme.get-color("primary");
     border: none;
     color: white;
     font-size: 1.2rem;
@@ -34,12 +35,12 @@
     transition: 0.3s;
 
     &:hover {
-      background: #5a4df0;
+      background: theme.get-color("secondary");
     }
   }
 
   h2 {
-    color: #6d5dfc;
+    color: theme.get-color("title");
     font-size: 1.3rem;
   }
 
@@ -74,7 +75,7 @@
   border-right: 1px solid #333;
 
   h2 {
-    color: #6d5dfc;
+    color: theme.get-color("title");
     font-size: 1.2rem;
   }
 

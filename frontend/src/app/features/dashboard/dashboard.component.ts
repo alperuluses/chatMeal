@@ -12,6 +12,8 @@ import { AuthService } from '../../core/services/auth-service';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
 import { AudioDetectorService } from '../../core/services/voice-chat/audio-detector.service';
 import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
+import { User } from '../../core/models/user.model';
+import { DashboardHeaderComponent } from './header/dashboard-header.component';
 
 
 
@@ -19,7 +21,7 @@ import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.serv
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [CommonModule, FormsModule, ChatComponent],
+  imports: [CommonModule, FormsModule, ChatComponent, DashboardHeaderComponent],
 })
 export class DashboardComponent implements OnInit {
 
@@ -29,6 +31,7 @@ export class DashboardComponent implements OnInit {
   channelChange: BehaviorSubject<Channel | undefined> = new BehaviorSubject<Channel | undefined>(undefined);
   channelChange$: Observable<Channel | undefined> = this.channelChange.asObservable();
   previousChannelId: any[] = [null];
+  currentUser: User | null = null;
 
   // Modal kontrolü
   showAddServerModal: boolean = false;
@@ -37,10 +40,13 @@ export class DashboardComponent implements OnInit {
 
   chatDisplayStatus: boolean = false;
   serversDisplayStatus: boolean = true;
-  isSpeaking = false;
+
+  speakingUsers: any = {};
   muteStatus: boolean = true;
+  lastSpeakingStatus: boolean | null = null;
 
   isScreenSharing = false;
+
 
   constructor(
     private serverService: ServerService,
@@ -54,26 +60,45 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.initializeAuthState()
+    this.authService.user$.subscribe((user) => {
+      this.currentUser = user;
+    })
     this.getAllServers();
     // Odadaki kullanıcı listesini güncelleyin ve herkese gönderin
     this.socketService.onUpdateUserList((users) => {
       this.usersInChannel = users;
       console.log("Kullanıcı listesi güncellendi:", users);
     });
+
+    this.socketService.onUpdateSpeakingStatus((data) => {
+      console.log("onUpdateSpeakingStatus",data);
+      if (this.lastSpeakingStatus !== data.isSpeaking) {
+        if (!this.speakingUsers[data.channelId]) {
+          this.speakingUsers[data.channelId] = []
+        }
+        this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
+      }
+    })
   }
 
   startAudioAnalysis() {
-    // Kullanıcı etkileşimi ile mikrofon erişimini başlat
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        this.audioDetector.analyzeStream(stream, (isSpeaking) => {
-          this.isSpeaking = isSpeaking;
+    const stream = this.voiceChatService.getMediaStream();
+  
+    if (!stream) {
+      console.error("❌ Serviste aktif medya akışı bulunamadı!");
+      return;
+    }
+  
+    this.audioDetector.analyzeStream(stream, (isSpeaking) => {
+      if (this.lastSpeakingStatus !== isSpeaking) {
+        this.lastSpeakingStatus = isSpeaking;
+        this.socketService.emit("user-speaking", {
+          userName: this.currentUser?.username,
+          channelId: this.channelChange.value?.id,
+          isSpeaking: isSpeaking,
         });
-      })
-      .catch((error) => {
-        console.error('Mikrofon erişimi reddedildi veya hata oluştu:', error);
-      });
+      }
+    });
   }
 
   getAllServers(): void {
@@ -104,7 +129,7 @@ export class DashboardComponent implements OnInit {
     this.serversDisplayStatus = !this.serversDisplayStatus;
   }
 
-  selectChannel(channel: Channel): void {
+  async selectChannel(channel: Channel): Promise<void> {
     console.log("Kanal değiştirildi:", channel);
     this.previousChannelId.push(channel.id);
     let token = this.authService.getToken();
@@ -112,13 +137,14 @@ export class DashboardComponent implements OnInit {
       this.socketService.authenticate(token); // Kullanıcıyı doğrula
       let previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
       this.socketService.joinRoom(channel.id, previousChannelIdNew); // Yeni odaya giriş
-      this.startAudioAnalysis()
-      
+    
+
       //Voice initialize when selected a channel
-      this.voiceChatService.initialize(`${channel.id}-voice`,`${previousChannelIdNew}-voice`)
+      await this.voiceChatService.initialize(`${channel.id}-voice`, `${previousChannelIdNew}-voice`)
       this.toggleStatus()
       this.channelChange.next(channel);
-      }
+      this.startAudioAnalysis()
+    }
   }
 
   // Kanal ekleme modalını aç/kapat
@@ -153,21 +179,21 @@ export class DashboardComponent implements OnInit {
     if (event.key.toLowerCase() === 'k') {
       this.mute();
     }
-  }  
-
-
-
-toggleScreenShare() {
-  if (this.isScreenSharing) {
-    this.voiceChatService.stopScreenShare();
-    this.isScreenSharing = false;
-  } else {
-    this.voiceChatService.startScreenShare().then((stream) => {
-      if (stream) {
-        this.isScreenSharing = true;
-      }
-    });
   }
-}
+
+
+
+  toggleScreenShare() {
+    if (this.isScreenSharing) {
+      this.voiceChatService.stopScreenShare();
+      this.isScreenSharing = false;
+    } else {
+      this.voiceChatService.startScreenShare().then((stream) => {
+        if (stream) {
+          this.isScreenSharing = true;
+        }
+      });
+    }
+  }
 
 }

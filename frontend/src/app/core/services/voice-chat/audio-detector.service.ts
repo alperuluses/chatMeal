@@ -33,7 +33,7 @@ export class AudioDetectorService {
       const array = new Uint8Array(this.analyser!.frequencyBinCount);     
       this.analyser!.getByteFrequencyData(array);
       const volume = array.reduce((a, b) => a + b) / array.length;
-      callback(volume > 30); // Ses seviyesi eşik değeri
+      callback(volume > 25); // Ses seviyesi eşik değeri
     }, 100);
   }
 

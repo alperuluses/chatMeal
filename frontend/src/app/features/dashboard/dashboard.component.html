@@ -1,3 +1,4 @@
+<app-dashboard-header></app-dashboard-header>
 <div class="dashboard-container">
   <!-- Sol Menü: Kanallar -->
   <div
@@ -32,22 +33,20 @@
       <section class="rooms" *ngIf="channels.length > 0">
         <h2>Odalar</h2>
         <ul>
-          <li *ngFor="let channel of channels" (click)="selectChannel(channel)">
-            {{ channel.name
-            }}<span class="text-success p-1"
-              >({{ channel.id ? (usersInChannel?.[channel.id]?.length || 0) : 0
-
-              }})</span
-            >
+          <ng-container *ngFor="let channel of channels">
+            <li (click)="selectChannel(channel)">
+              {{ channel.name}}
+              <span class="text-success p-1">({{ channel.id ? (usersInChannel?.[channel.id]?.length || 0) : 0}})</span>
+            </li>
             <ul *ngIf="channel.id">
               <ng-container *ngIf="usersInChannel?.[channel.id]">
                 <li *ngFor="let user of usersInChannel[channel.id]">
                   <i class="bi bi-person-fill"></i>
-                  {{ user }} {{ isSpeaking ? "🔊" : "" }}
+                  <span>{{ user }} {{ speakingUsers[channel.id]?.[user] ? "🔊" : "" }}</span>
                 </li>
               </ng-container>
             </ul>
-          </li>
+          </ng-container>
         </ul>
         <div class="d-flex align-items-center justify-content-center">
           <!-- Mute Button -->
@@ -61,10 +60,17 @@
               [ngClass]="muteStatus ? 'bi-mic-fill' : 'bi-mic-mute-fill'"
             ></i>
           </button>
-            <!-- Share Screen Button -->
-            <button (click)="toggleScreenShare()" class="screen-share-button" [class.active]="isScreenSharing">
-              <i class="bi" [ngClass]="isScreenSharing ? 'bi-display-fill' : 'bi-display'"></i>
-            </button>
+          <!-- Share Screen Button -->
+          <button
+            (click)="toggleScreenShare()"
+            class="screen-share-button"
+            [class.active]="isScreenSharing"
+          >
+            <i
+              class="bi"
+              [ngClass]="isScreenSharing ? 'bi-display-fill' : 'bi-display'"
+            ></i>
+          </button>
         </div>
       </section>
     </ng-container>

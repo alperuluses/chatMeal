@@ -1,2 +1,11 @@
-$primary-color:#6d5dfc;
-$secondary-text-color:#d1d1d1;
+$theme-colors: (
+  "primary": #82151e,
+  "secondary": #f62127,
+  "background": #121212,
+  "text": #ffffff,
+  "title":#c32734
+);
+
+@function get-color($key) {
+  @return map-get($theme-colors, $key);
+}
