@@ -71,24 +71,24 @@ export class DashboardComponent implements OnInit {
     });
 
     this.socketService.onUpdateSpeakingStatus((data) => {
-      console.log("onUpdateSpeakingStatus",data);
-      if (this.lastSpeakingStatus !== data.isSpeaking) {
-        if (!this.speakingUsers[data.channelId]) {
-          this.speakingUsers[data.channelId] = []
-        }
-        this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
+      console.log("onUpdateSpeakingStatus", data);
+
+      if (!this.speakingUsers[data.channelId]) {
+        this.speakingUsers[data.channelId] = []
       }
+      this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
+
     })
   }
 
   startAudioAnalysis() {
     const stream = this.voiceChatService.getMediaStream();
-  
+
     if (!stream) {
       console.error("❌ Serviste aktif medya akışı bulunamadı!");
       return;
     }
-  
+
     this.audioDetector.analyzeStream(stream, (isSpeaking) => {
       if (this.lastSpeakingStatus !== isSpeaking) {
         this.lastSpeakingStatus = isSpeaking;
@@ -137,7 +137,7 @@ export class DashboardComponent implements OnInit {
       this.socketService.authenticate(token); // Kullanıcıyı doğrula
       let previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
       this.socketService.joinRoom(channel.id, previousChannelIdNew); // Yeni odaya giriş
-    
+
 
       //Voice initialize when selected a channel
       await this.voiceChatService.initialize(`${channel.id}-voice`, `${previousChannelIdNew}-voice`)
