@@ -34,7 +34,7 @@ export class SocketService {
   }
 
   emit(event: string, data: any) {
-    console.log(data);
+
 
     this.socket.emit(event, data);
   }
@@ -85,6 +85,10 @@ export class SocketService {
 
   onUpdateUserList(callback: (users: string[]) => void) {
     this.socket.on('updateUserList', callback);
+  }
+
+  onUpdateSpeakingStatus(callback:(data: { userName: string;channelId:string; isSpeaking: boolean }) => void){
+    this.socket.on("update-speaking-status", callback)
   }
 
   emitUserList() {

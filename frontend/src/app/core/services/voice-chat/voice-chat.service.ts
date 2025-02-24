@@ -13,8 +13,8 @@ export class VoiceChatService {
   private connectedPeers: string[] = [];
   private currentChanellId: string = "";
   private previousChannelId: string = "";
-
   constructor(private socketService: SocketService) {
+
     this.socket = this.socketService.getSocket();
     this.socket.on('connect', async () => {
       console.log('✅ Socket.io bağlantısı başarılı');
@@ -33,20 +33,20 @@ export class VoiceChatService {
       }
     });
 
-    this.socket.on('user-connected', async (userId, socketName) => {
-      if (!this.connectedPeers.includes(userId)) {
-        this.connectedPeers.push(userId);
+    this.socket.on('user-connected', async (peerId, socketName) => {
+      if (!this.connectedPeers.includes(peerId)) {
+        this.connectedPeers.push(peerId);
       }
-      console.log('🟢 Yeni kullanıcı bağlandı:', [userId, socketName]);
+      console.log('🟢 Yeni kullanıcı bağlandı:', [peerId, socketName]);
       this.playJoinSound(); // Giriş sesi çal
 
       // Stream hazır değilse bekleyerek dene
       const tryCallingUser = () => {
         if (this.myStream) {
-          console.log(`📞 Stream hazır! ${userId} kullanıcısını arıyorum...`);
-          this.callUser(userId);
+          console.log(`📞 Stream hazır! ${peerId} kullanıcısını arıyorum...`);
+          this.callUser(peerId);
         } else {
-          console.warn(`⚠️ Stream hazır değil. Bekleniyor... (userId: ${userId})`);
+          console.warn(`⚠️ Stream hazır değil. Bekleniyor... (userId: ${peerId})`);
           setTimeout(tryCallingUser, 1000); // 1 saniye sonra tekrar dene
         }
       };
@@ -55,6 +55,7 @@ export class VoiceChatService {
     })
 
     this.socket.on('user-destroyed', (peerId) => {
+      console.log('🔴 Kullanıcı ayrıldı:', peerId);
       this.connectedPeers = this.connectedPeers.filter((peersId) => peersId !== peerId);
       if (this.peers[peerId]) {
         this.peers[peerId].close();
@@ -67,15 +68,6 @@ export class VoiceChatService {
     this.socket.on('disconnect', () => {
       console.warn('🔌 Socket bağlantısı kesildi!');
       this.myStream?.getTracks().forEach(track => track.stop());
-    });
-
-    this.socket.on('user-disconnected', (userId) => {
-      console.log('🔴 Kullanıcı ayrıldı:', userId);
-      if (this.peers[userId]) {
-        this.peers[userId].close();
-        delete this.peers[userId];
-      }
-      this.deleteMedia(userId)
     });
   }
 
@@ -166,25 +158,25 @@ export class VoiceChatService {
     }
   }
 
-  callUser(userId: string) {
-    console.log("callUser:", userId)
+  callUser(peerId: string) {
+    console.log("callUser:", peerId)
     if (!this.myStream) {
       console.error('❌ Media stream is not initialized yet.');
       return;
     }
 
-    console.log(`📡 Arama yapılıyor: ${userId}`);
-    const call = this.peer.call(userId, this.myStream);
+    console.log(`📡 Arama yapılıyor: ${peerId}`);
+    const call = this.peer.call(peerId, this.myStream);
 
     if (call) {
       console.log('✅ Arama başarılı');
       call.on('stream', (userStream) => {
         console.log('🔊 Karşı tarafın sesi alındı', userStream);
-        this.addAudioStream(userStream, userId);
+        this.addAudioStream(userStream, peerId);
       });
-      this.peers[userId] = call;
+      this.peers[peerId] = call;
     } else {
-      console.error('❌ Call failed for user:', userId);
+      console.error('❌ Call failed for user:', peerId);
     }
   }
 
@@ -318,5 +310,9 @@ export class VoiceChatService {
 
     // Bağlı kullanıcı listesini temizle
     this.connectedPeers = [];
+  }
+
+  getMediaStream() {
+    return this.myStream;
   }
 }

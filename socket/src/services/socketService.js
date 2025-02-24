@@ -152,6 +152,13 @@ const initializeSocket = (server) => {
       }
     });
 
+    socket.on("user-speaking", (data) => {
+      // Örneğin: { userId: "123", channelId: "abc", isSpeaking: true }
+      console.log("user-speak:",data);
+      
+      io.to(data.channelId).emit("update-speaking-status", data);
+    });
+
     socket.on("user-destroyed", (roomId, peerId) => {
       io.to(roomId).emit("user-destroyed", peerId);
       console.log("user-destroyed", `${peerId} - ${roomId}`);
