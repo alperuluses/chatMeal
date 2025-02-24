@@ -1,15 +1,8 @@
-// Genel stil
-.register-general-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: #121212; // Koyu tema
-}
+@use '/styles/theme' as theme;
 
 // Kart stilinde bir form
 .register-container {
-  background: #1e1e1e;
+  background: theme.get-color("background");
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
@@ -21,7 +14,7 @@
 // Başlık stili
 h2 {
   font-size: 1.5rem;
-  color: #6d5dfc;
+  color: theme.get-color("secondary");
   margin-bottom: 1rem;
 }
 
@@ -61,31 +54,14 @@ h2 {
   }
 }
 
-// Buton
-.btn-primary {
-  width: 100%;
-  background: #6d5dfc;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 1rem;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.3s;
-
-  &:hover {
-    background: #5a4df0;
-  }
-}
-
 // Footer kısmı
 .footer {
   margin-top: 1rem;
   font-size: 0.85rem;
-  color: #b0b0b0;
+  color: theme.get-color("text");
 
   a {
-    color: #6d5dfc;
+    color: theme.get-color("text");
     text-decoration: none;
     font-weight: 600;
 

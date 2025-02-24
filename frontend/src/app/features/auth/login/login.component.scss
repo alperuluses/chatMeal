@@ -1,32 +1,23 @@
+@use '/styles/theme' as theme;
+
 // Genel stil
 .container-fluid {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #121212; // Koyu tema
+  background: theme.get-color("background"); // Koyu tema
 }
 
 // Kart tasarımı
 .login-card {
-  background: #1e1e1e;
+  background: theme.get-color("background");;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 380px;
   text-align: center;
-}
-
-// Başlık ve açıklamalar
-h2 {
-  font-size: 1.6rem;
-  color: #6d5dfc;
-}
-
-p {
-  font-size: 0.9rem;
-  color: #b0b0b0;
 }
 
 // Form elemanları
@@ -55,7 +46,7 @@ p {
 // Buton
 .login-btn {
   width: 100%;
-  background: #6d5dfc;
+  background: theme.get-color("primary");;
   border: none;
   padding: 10px;
   border-radius: 6px;
@@ -65,13 +56,13 @@ p {
   transition: background 0.3s;
 
   &:hover {
-    background: #5a4df0;
+    background: theme.get-color("secondary");;
   }
 }
 
 // Footer kısmı
 p a {
-  color: #6d5dfc;
+  color: theme.get-color("secondary");
   text-decoration: none;
   font-weight: 600;
 
