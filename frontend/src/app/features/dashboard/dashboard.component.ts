@@ -71,7 +71,6 @@ export class DashboardComponent implements OnInit {
     });
 
     this.socketService.onUpdateSpeakingStatus((data) => {
-      console.log("onUpdateSpeakingStatus", data);
 
       if (!this.speakingUsers[data.channelId]) {
         this.speakingUsers[data.channelId] = []
@@ -110,6 +109,7 @@ export class DashboardComponent implements OnInit {
   }
 
   selectServer(server: Server): void {
+    this.socketService.getSocket().connect();
     this.selectedServer = server;
     if (server.id) {
       this.channels = this.channelService.getChannelsByServer(server.id).pipe(
@@ -184,6 +184,10 @@ export class DashboardComponent implements OnInit {
 
 
   toggleScreenShare() {
+    this.voiceChatService.screenShareStatus$.subscribe((status) => {
+      this.isScreenSharing = status;
+    })
+
     if (this.isScreenSharing) {
       this.voiceChatService.stopScreenShare();
       this.isScreenSharing = false;

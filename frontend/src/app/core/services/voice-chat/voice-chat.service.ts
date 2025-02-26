@@ -1,36 +1,33 @@
 // voice-chat.service.ts
 import { Injectable } from '@angular/core';
 import { Socket } from 'socket.io-client';
-import Peer from 'peerjs';
+import Peer, { MediaConnection } from 'peerjs';
 import { SocketService } from '../socket.service';
+import { Peers } from '../../models/peer.model';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChatService {
   private socket: Socket;
   private peer!: Peer;
   private myStream!: MediaStream;
-  private peers: { [id: string]: any } = {};
+  private peers: Peers = {};
   private connectedPeers: string[] = [];
   private currentChanellId: string = "";
   private previousChannelId: string = "";
+  private screenShareStatus = new BehaviorSubject<boolean>(false);
+  screenShareStatus$ = this.screenShareStatus.asObservable();
+
+
   constructor(private socketService: SocketService) {
+    //sayfa yenilendiğinde kullanıcıyı destroy et
+    window.addEventListener('beforeunload', () => {
+      this.socket.emit("user-destroyed", this.currentChanellId, this.peer.id);
+    });
 
     this.socket = this.socketService.getSocket();
     this.socket.on('connect', async () => {
       console.log('✅ Socket.io bağlantısı başarılı');
-      if (this.currentChanellId) {
-        console.log(`🔄 Yeniden bağlanılıyor: ${this.currentChanellId}`);
-
-        // Peer bağlantısını tamamen yenile
-        if (this.peer) {
-          this.peer.destroy();
-        }
-
-        await this.initialize(this.currentChanellId, this.previousChannelId);
-
-        // Tüm bağlı kullanıcıları tekrar ara
-        this.callAllConnectedPeers();
-      }
     });
 
     this.socket.on('user-connected', async (peerId, socketName) => {
@@ -72,6 +69,11 @@ export class VoiceChatService {
   }
 
   async initialize(channelId: string, previousChannelId: string) {
+    console.log("init voice chat");
+    if (this.socket && !this.socket.connected) {
+      this.socket.connect()
+    }
+
     if (channelId !== this.currentChanellId) {
       console.log(`🔄 Oda değiştiriliyor: ${previousChannelId} ➝ ${channelId}`);
 
@@ -94,6 +96,7 @@ export class VoiceChatService {
 
         // Peer ID kesinlikle tanımlıysa sunucuya gönder
         console.log(`📡 Sunucuya bildiriliyor: channelId=${channelId}, peerId=${peerId}`);
+        console.log(this.socket)
         this.socket.emit('joinVoiceChannel', channelId, previousChannelId, peerId);
 
       } catch (error) {
@@ -264,20 +267,30 @@ export class VoiceChatService {
       ...audioStream.getAudioTracks(),
     ]);
 
+    // Ekran paylaşımı video track'inin 'ended' olayını dinleyin
+    const videoTrack = screenStream.getVideoTracks()[0];
+    videoTrack.onended = () => {
+      console.log('Ekran paylaşımı durduruldu.');
+      this.stopScreenShare(); // Durdurma işlemi yap
+    };
+
     this.myStream = combinedStream;
     this.callAllConnectedPeers();
 
     console.log('Bağlı olan kullanıcılar:', this.connectedPeers);
+    this.screenShareStatus.next(true);
 
     return this.myStream;
   }
 
 
 
-  async stopScreenShare() {
+  async stopScreenShare(): Promise<boolean> {
     await this.myStream.getTracks().forEach(track => track.stop());
     await this.initMedia()
     this.callAllConnectedPeers();
+    this.screenShareStatus.next(false);
+    return true;
   }
 
   playJoinSound() {
@@ -297,22 +310,60 @@ export class VoiceChatService {
       this.socket.emit("user-destroyed", previousChannelId, this.peer.id);
       console.log("🔌 Peer bağlantısı kapatılıyor:", this.peer.id);
 
-      // Tüm mevcut PeerJS bağlantılarını kapat
-      Object.keys(this.peers).forEach(peerId => {
-        console.log("❌ Peer kapatılıyor:", peerId);
-        this.peers[peerId].close();
-        this.deleteMedia(peerId);
-      });
+      this.cleanupConnections(this.peers)
 
       // PeerJS bağlantısını tamamen sıfırla
       this.peer.destroy();
+    }
+
+    if (this.screenShareStatus.value) {
+      this.stopScreenShare()
     }
 
     // Bağlı kullanıcı listesini temizle
     this.connectedPeers = [];
   }
 
+
+  cleanupConnections(peers: Peers = this.peers) {
+    // Tüm mevcut PeerJS bağlantılarını kapat
+    Object.keys(peers).forEach(peerId => {
+      console.log("❌ Peer kapatılıyor:", peerId);
+      this.peers[peerId].close();
+      this.deleteMedia(peerId);
+    });
+  }
+
+  cleanupAllMedia() {
+    // Sayfada yer alan tüm video ve ses öğelerini temizleyin
+    const allAudioElements = document.querySelectorAll('audio');
+    const allVideoElements = document.querySelectorAll('video');
+
+    allAudioElements.forEach((audio: HTMLAudioElement) => {
+      audio.remove();
+      console.log(`🗑️ cleanupAllMedia Ses kaldırıldı: ${audio.id}`);
+    });
+
+    allVideoElements.forEach((video: HTMLVideoElement) => {
+      video.remove();
+      console.log(`🗑️ cleanupAllMedia Video kaldırıldı: ${video.id}`);
+    });
+  }
+
+  destroyUser() {
+    if (this.peer) {
+      this.socket.emit("user-destroyed", this.currentChanellId, this.peer.id);
+    }
+    this.socket.disconnect()
+    this.previousChannelId = "";
+    this.currentChanellId = "";
+  }
+
   getMediaStream() {
     return this.myStream;
+  }
+
+  setScreenShareStatus(status:boolean){
+    this.screenShareStatus.next(status)
   }
 }

@@ -14,7 +14,7 @@ import { ButtonComponent } from "../../../shared/components/button/button.compon
   imports: [ReactiveFormsModule, CommonModule, RouterModule, ButtonComponent],
   providers: [AuthService]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
     username: new FormControl('', [Validators.required]),  // Kullanıcı adı zorunlu
     password: new FormControl('', [Validators.required])   // Şifre zorunlu
@@ -23,6 +23,11 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) { }
 
+  ngOnInit(): void {
+    if (this.authService.getToken()) {
+      this.router.navigate(['/dashboard'])
+    }
+  }
   onSubmit(): void {
     if (this.loginForm.invalid) {
       return;

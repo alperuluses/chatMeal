@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AuthService } from '../../../core/services/auth-service';
+import { VoiceChatService } from '../../../core/services/voice-chat/voice-chat.service';
 
 @Component({
   selector: 'app-dashboard-header',
@@ -9,12 +10,14 @@ import { AuthService } from '../../../core/services/auth-service';
   styleUrl: './dashboard-header.component.scss'
 })
 export class DashboardHeaderComponent {
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private voiceService:VoiceChatService) {
 
   }
 
   logout() {
     this.authService.logout();
+    this.voiceService.cleanupConnections();
+    this.voiceService.destroyUser();
   }
 
   reloadPage() {
