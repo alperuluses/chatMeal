@@ -5,6 +5,8 @@ import Peer, { MediaConnection } from 'peerjs';
 import { SocketService } from '../socket.service';
 import { Peers } from '../../models/peer.model';
 import { BehaviorSubject } from 'rxjs';
+import { AuthService } from '../auth-service';
+import { User } from '../../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChatService {
@@ -16,10 +18,11 @@ export class VoiceChatService {
   private currentChanellId: string = "";
   private previousChannelId: string = "";
   private screenShareStatus = new BehaviorSubject<boolean>(false);
+  private currentUser: User | null = null;
   screenShareStatus$ = this.screenShareStatus.asObservable();
 
 
-  constructor(private socketService: SocketService) {
+  constructor(private socketService: SocketService, private authService: AuthService) {
     //sayfa yenilendiğinde kullanıcıyı destroy et
     window.addEventListener('beforeunload', () => {
       this.socket.emit("user-destroyed", this.currentChanellId, this.peer.id);
@@ -69,6 +72,10 @@ export class VoiceChatService {
   }
 
   async initialize(channelId: string, previousChannelId: string) {
+    this.authService.getLoginedUserData()?.subscribe((user) => {
+      this.currentUser = user;
+    }
+    )
     console.log("init voice chat");
     if (this.socket && !this.socket.connected) {
       this.socket.connect()
@@ -135,17 +142,24 @@ export class VoiceChatService {
         }
       });
       console.log('✅ Media stream initialized');
-
+      this.peer.off('call'); // Önceki çağrıları temizle
       this.peer.on('call', (call) => {
         console.log('📞 Gelen çağrı:', call);
         if (!this.connectedPeers.includes(call.peer)) {
           this.connectedPeers.push(call.peer);
         }
-        call.answer(this.myStream);
+
+        if (this.myStream.getVideoTracks()[0]) {
+          call.answer(new MediaStream([this.myStream.getVideoTracks()[0]]));
+        }
+
+        if (this.myStream.getAudioTracks()[0]) {
+          call.answer(new MediaStream([this.myStream.getAudioTracks()[0]]));
+        }
 
         call.on('stream', (userStream) => {
-          console.log('🎤 Kullanıcı sesi alındı', userStream);
-          this.addAudioStream(userStream, call.peer);
+          console.log('🎤 Kullanıcı sesi alındı', userStream, call.metadata.name);
+          this.addAudioStream(userStream, call.peer, call.metadata.name);
         });
 
         call.on('error', (err) => {
@@ -169,13 +183,14 @@ export class VoiceChatService {
     }
 
     console.log(`📡 Arama yapılıyor: ${peerId}`);
-    const call = this.peer.call(peerId, this.myStream);
+    const call = this.peer.call(peerId, this.myStream, { metadata: { name: this.currentUser?.username } });
 
     if (call) {
       console.log('✅ Arama başarılı');
+      call.off('stream'); // Önceki stream olaylarını temizle
       call.on('stream', (userStream) => {
-        console.log('🔊 Karşı tarafın sesi alındı', userStream);
-        this.addAudioStream(userStream, peerId);
+        console.log('🔊 Karşı tarafın sesi alındı', userStream.getTracks());
+        this.addAudioStream(userStream, peerId, '');
       });
       this.peers[peerId] = call;
     } else {
@@ -186,6 +201,8 @@ export class VoiceChatService {
   deleteMedia(peerId: string) {
     const audioElement = document.getElementById(`audio-${peerId}`);
     const videoElement = document.getElementById(`video-${peerId}`);
+    const nameElement = document.getElementById(`name-${peerId}`);
+    const containerElement = document.getElementById(`container-${peerId}`);
 
     if (audioElement) {
       audioElement.remove();
@@ -196,8 +213,19 @@ export class VoiceChatService {
       videoElement.remove();
       console.log(`🗑️ Video kaldırıldı: video-${peerId}`);
     }
+
+    if (nameElement) {
+      nameElement.remove();
+      console.log(`🗑️ İsim kaldırıldı: name-${peerId}`);
+    }
+
+    if (containerElement) {
+      containerElement.remove();
+      console.log(`🗑️ Container kaldırıldı: container-${peerId}`);
+      
+    }
   }
-  addAudioStream(stream: MediaStream, peerId: string) {
+  addAudioStream(stream: MediaStream, peerId: string, userName: string) {
     this.deleteMedia(peerId); // Önce varsa aynı peerId için audio/video kaldırılır
 
     const audioTracks = stream.getAudioTracks();
@@ -213,17 +241,20 @@ export class VoiceChatService {
     }
 
     if (videoTracks.length > 0) {
+      userName = userName ? userName : "Bilinmeyen Kullanıcı"
       const video = document.createElement('video');
+      const name = document.createElement('span');
+      const container = document.createElement('div');
+      container.id = `container-${peerId}`;
+      name.innerText = userName;
+      name.id = `name-${peerId}`;
       video.id = `video-${peerId}`;
+      video.controls = true;
       video.srcObject = stream;
       video.autoplay = true;
-      video.style.width = '90%';
-      video.style.maxHeight = '500px';
-      video.style.border = '2px solid #6d5dfc';
-      video.style.margin = '10px';
-      video.style.borderRadius = '8px';
-      video.style.backgroundColor = 'black';
-      document.body.prepend(video);
+      container.appendChild(video);
+      container.appendChild(name);
+      document.getElementById("screen-share")?.appendChild(container);
       console.log(`📺 Video eklendi: video-${peerId}`);
     }
   }
@@ -263,8 +294,8 @@ export class VoiceChatService {
     const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     const combinedStream = new MediaStream([
-      ...screenStream.getVideoTracks(),
       ...audioStream.getAudioTracks(),
+      ...screenStream.getVideoTracks(),
     ]);
 
     // Ekran paylaşımı video track'inin 'ended' olayını dinleyin
@@ -363,7 +394,7 @@ export class VoiceChatService {
     return this.myStream;
   }
 
-  setScreenShareStatus(status:boolean){
+  setScreenShareStatus(status: boolean) {
     this.screenShareStatus.next(status)
   }
 }

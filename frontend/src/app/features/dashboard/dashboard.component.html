@@ -29,7 +29,7 @@
       </ul>
     </aside>
     <!-- Orta Bölüm: Odalar -->
-    <ng-container *ngIf="channels | async as channels">
+    <ng-container *ngIf="channels$ | async as channels">
       <section class="rooms" *ngIf="channels.length > 0">
         <h2>Odalar</h2>
         <ul>
@@ -64,11 +64,11 @@
           <button
             (click)="toggleScreenShare()"
             class="screen-share-button"
-            [class.active]="isScreenSharing"
+            [class.active]="(isScreenSharing$ | async)"
           >
             <i
               class="bi"
-              [ngClass]="isScreenSharing ? 'bi-display-fill' : 'bi-display'"
+              [ngClass]="(isScreenSharing$ | async) ? 'bi-display-fill' : 'bi-display'"
             ></i>
           </button>
         </div>

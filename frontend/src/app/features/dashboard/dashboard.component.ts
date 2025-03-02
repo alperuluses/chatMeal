@@ -1,21 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import { ChatComponent } from '../chat/chat.component';
+import { DashboardHeaderComponent } from './header/dashboard-header.component';
 import { ServerService } from '../../core/services/server/server.service';
-import { Server } from '../../core/models/server.model';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { ChannelService } from '../../core/services/channel/channel.service';
-import { Channel } from '../../core/models/channel.model';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth-service';
 import { MobileCheckService } from '../../core/services/mobile-check.service';
 import { AudioDetectorService } from '../../core/services/voice-chat/audio-detector.service';
 import { VoiceChatService } from '../../core/services/voice-chat/voice-chat.service';
+
+import { Server } from '../../core/models/server.model';
+import { Channel } from '../../core/models/channel.model';
 import { User } from '../../core/models/user.model';
-import { DashboardHeaderComponent } from './header/dashboard-header.component';
-
-
 
 @Component({
   selector: 'app-dashboard',
@@ -23,30 +24,26 @@ import { DashboardHeaderComponent } from './header/dashboard-header.component';
   styleUrls: ['./dashboard.component.scss'],
   imports: [CommonModule, FormsModule, ChatComponent, DashboardHeaderComponent],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
   serverList: Server[] = [];
   selectedServer: Server | null = null;
-  channels: Observable<Channel[]> | undefined = undefined;
-  channelChange: BehaviorSubject<Channel | undefined> = new BehaviorSubject<Channel | undefined>(undefined);
-  channelChange$: Observable<Channel | undefined> = this.channelChange.asObservable();
+  channels$?: Observable<Channel[]>;
+  channelChange$ = new BehaviorSubject<Channel | undefined>(undefined);
   previousChannelId: any[] = [null];
   currentUser: User | null = null;
-
-  // Modal kontrolü
-  showAddServerModal: boolean = false;
-  newServerName: string = '';
   usersInChannel: any;
 
-  chatDisplayStatus: boolean = false;
-  serversDisplayStatus: boolean = true;
-
-  speakingUsers: any = {};
-  muteStatus: boolean = true;
+  chatDisplayStatus = false;
+  serversDisplayStatus = true;
+  speakingUsers: Record<string, Record<string, boolean>> = {};
+  muteStatus = true;
   lastSpeakingStatus: boolean | null = null;
+  isScreenSharing$ = new BehaviorSubject<boolean>(false);
 
-  isScreenSharing = false;
-
+  showAddServerModal = false;
+  newServerName = '';
 
   constructor(
     private serverService: ServerService,
@@ -55,149 +52,155 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     public mobileCheckService: MobileCheckService,
     private audioDetector: AudioDetectorService,
-    private voiceChatService: VoiceChatService,
-  ) { }
+    private voiceChatService: VoiceChatService
+  ) {}
 
   ngOnInit(): void {
-    this.authService.initializeAuthState()
-    this.authService.user$.subscribe((user) => {
-      this.currentUser = user;
-    })
+    this.initializeAuth();
     this.getAllServers();
-    // Odadaki kullanıcı listesini güncelleyin ve herkese gönderin
+    this.setupSocketListeners();
+  }
+
+  private initializeAuth(): void {
+    this.authService.initializeAuthState();
+    this.authService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => (this.currentUser = user));
+  }
+
+  private setupSocketListeners(): void {
     this.socketService.onUpdateUserList((users) => {
       this.usersInChannel = users;
-      console.log("Kullanıcı listesi güncellendi:", users);
+      console.log('Kullanıcı listesi güncellendi:', users);
     });
 
     this.socketService.onUpdateSpeakingStatus((data) => {
-
       if (!this.speakingUsers[data.channelId]) {
-        this.speakingUsers[data.channelId] = []
+        this.speakingUsers[data.channelId] = {};
       }
-      this.speakingUsers[data.channelId][data.userName] = data.isSpeaking
-
-    })
+      this.speakingUsers[data.channelId][data.userName] = data.isSpeaking;
+    });
   }
 
-  startAudioAnalysis() {
-    const stream = this.voiceChatService.getMediaStream();
+  getAllServers(): void {
+    this.serverService.getServers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        if (res.servers) {
+          this.serverList = res.servers;
+        }
+      });
+  }
 
+  selectServer(server: Server): void {
+    this.socketService.getSocket().connect();
+    this.selectedServer = server;
+    
+    if (server.id) {
+      this.channels$ = this.channelService.getChannelsByServer(server.id).pipe(
+        map((res) => res.channels ?? [])
+      );
+    }
+
+    this.socketService.emitUserList();
+  }
+
+  async selectChannel(channel: Channel): Promise<void> {
+    console.log('Kanal değiştirildi:', channel);
+    this.previousChannelId.push(channel.id);
+    
+    const token = this.authService.getToken();
+    if (channel.id && token) {
+      this.socketService.authenticate(token);
+      const previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2] ?? null;
+      this.socketService.joinRoom(channel.id, previousChannelIdNew);
+
+      await this.voiceChatService.initialize(`${channel.id}-voice`, `${previousChannelIdNew}-voice`);
+      
+      this.toggleStatus();
+      this.channelChange$.next(channel);
+      this.startAudioAnalysis();
+    }
+  }
+
+  startAudioAnalysis(): void {
+    const stream = this.voiceChatService.getMediaStream();
+    
     if (!stream) {
-      console.error("❌ Serviste aktif medya akışı bulunamadı!");
+      console.error('❌ Serviste aktif medya akışı bulunamadı!');
       return;
     }
 
     this.audioDetector.analyzeStream(stream, (isSpeaking) => {
       if (this.lastSpeakingStatus !== isSpeaking) {
         this.lastSpeakingStatus = isSpeaking;
-        this.socketService.emit("user-speaking", {
+        this.socketService.emit('user-speaking', {
           userName: this.currentUser?.username,
-          channelId: this.channelChange.value?.id,
-          isSpeaking: isSpeaking,
+          channelId: this.channelChange$.value?.id,
+          isSpeaking,
         });
       }
     });
   }
 
-  getAllServers(): void {
-    this.serverService.getServers().subscribe((res) => {
-      if (res.servers) {
-        this.serverList = res.servers;
-      }
-    });
-  }
-
-  selectServer(server: Server): void {
-    this.socketService.getSocket().connect();
-    this.selectedServer = server;
-    if (server.id) {
-      this.channels = this.channelService.getChannelsByServer(server.id).pipe(
-        map((res) => res.channels ? res.channels : []),
-        tap((res) => {
-          if (res.length > 0) {
-
-          }
-        })
-      );
-    }
-    this.socketService.emitUserList()
-  }
-
   toggleStatus(): void {
-    this.chatDisplayStatus = !this.chatDisplayStatus
+    this.chatDisplayStatus = !this.chatDisplayStatus;
     this.serversDisplayStatus = !this.serversDisplayStatus;
   }
 
-  async selectChannel(channel: Channel): Promise<void> {
-    console.log("Kanal değiştirildi:", channel);
-    this.previousChannelId.push(channel.id);
-    let token = this.authService.getToken();
-    if (channel.id && token) {
-      this.socketService.authenticate(token); // Kullanıcıyı doğrula
-      let previousChannelIdNew = this.previousChannelId[this.previousChannelId.length - 2 || this.previousChannelId.length]
-      this.socketService.joinRoom(channel.id, previousChannelIdNew); // Yeni odaya giriş
+  toggleScreenShare(): void {
+    this.voiceChatService.screenShareStatus$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((status) => this.isScreenSharing$.next(status));
 
-
-      //Voice initialize when selected a channel
-      await this.voiceChatService.initialize(`${channel.id}-voice`, `${previousChannelIdNew}-voice`)
-      this.toggleStatus()
-      this.channelChange.next(channel);
-      this.startAudioAnalysis()
-    }
-  }
-
-  // Kanal ekleme modalını aç/kapat
-  openAddServerModal() {
-    this.showAddServerModal = true;
-  }
-
-  closeAddServerModal() {
-    this.showAddServerModal = false;
-    this.newServerName = '';
-  }
-
-  // Yeni kanal ekleme
-  addServer() {
-    if (this.newServerName.trim()) {
-      this.serverService.createServer(this.newServerName).subscribe((res) => {
-        if (res.server.id) {
-          this.getAllServers();
+    if (this.isScreenSharing$.value) {
+      this.voiceChatService.stopScreenShare();
+      this.isScreenSharing$.next(false);
+    } else {
+      this.voiceChatService.startScreenShare().then((stream) => {
+        if (stream) {
+          this.isScreenSharing$.next(true);
         }
-        this.closeAddServerModal();
       });
     }
   }
 
-  mute() {
-    this.muteStatus = !this.muteStatus
-    this.voiceChatService.stopSpeakingDetection(this.muteStatus)
+  mute(): void {
+    this.muteStatus = !this.muteStatus;
+    this.voiceChatService.stopSpeakingDetection(this.muteStatus);
   }
 
   @HostListener('window:keydown', ['$event'])
-  handleKeyDown(event: KeyboardEvent) {
+  handleKeyDown(event: KeyboardEvent): void {
     if (event.key.toLowerCase() === 'k') {
       this.mute();
     }
   }
 
+  openAddServerModal(): void {
+    this.showAddServerModal = true;
+  }
 
+  closeAddServerModal(): void {
+    this.showAddServerModal = false;
+    this.newServerName = '';
+  }
 
-  toggleScreenShare() {
-    this.voiceChatService.screenShareStatus$.subscribe((status) => {
-      this.isScreenSharing = status;
-    })
-
-    if (this.isScreenSharing) {
-      this.voiceChatService.stopScreenShare();
-      this.isScreenSharing = false;
-    } else {
-      this.voiceChatService.startScreenShare().then((stream) => {
-        if (stream) {
-          this.isScreenSharing = true;
-        }
-      });
+  addServer(): void {
+    if (this.newServerName.trim()) {
+      this.serverService.createServer(this.newServerName)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((res) => {
+          if (res.server.id) {
+            this.getAllServers();
+          }
+          this.closeAddServerModal();
+        });
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

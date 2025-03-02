@@ -2,7 +2,7 @@
 // Genel Dashboard Yapısı
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  min-height: 91.6vh;
   background: theme.get-color("background");
 }
 
