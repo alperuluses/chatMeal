@@ -56,6 +56,7 @@ export class VoiceChatService {
 
     this.socket.on('user-destroyed', (peerId) => {
       console.log('🔴 Kullanıcı ayrıldı:', peerId);
+      this.playJoinSound('leave'); // Çıkış sesi çal
       this.connectedPeers = this.connectedPeers.filter((peersId) => peersId !== peerId);
       if (this.peers[peerId]) {
         this.peers[peerId].close();
@@ -222,7 +223,7 @@ export class VoiceChatService {
     if (containerElement) {
       containerElement.remove();
       console.log(`🗑️ Container kaldırıldı: container-${peerId}`);
-      
+
     }
   }
   addAudioStream(stream: MediaStream, peerId: string, userName: string) {
@@ -324,13 +325,18 @@ export class VoiceChatService {
     return true;
   }
 
-  playJoinSound() {
-    const audio = new Audio('assets/sounds/adam-geldi.mp3');
-    audio.muted = true;
-    audio.play().then(() => {
-      audio.muted = false; // Ses açılıyor
-    }).catch(err => console.error('Ses çalarken hata oluştu:', err));
+  async playJoinSound(type: string = 'join') {
+    try {
+      const soundMap = {
+        join: 'assets/sounds/adam-geldi.mp3',
+        leave: 'assets/sounds/unlost-disconnect.mp3',
+      };
 
+      const audio = new Audio(soundMap[type as keyof typeof soundMap] || soundMap.join);
+      await audio.play();
+    } catch (err) {
+      console.error('Ses çalarken hata oluştu:', err);
+    }
   }
 
   cleanupPreviousConnections(previousChannelId: string) {
