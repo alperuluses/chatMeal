@@ -56,7 +56,10 @@ export class VoiceChatService {
 
     this.socket.on('user-destroyed', (peerId) => {
       console.log('🔴 Kullanıcı ayrıldı:', peerId);
-      this.playJoinSound('leave'); // Çıkış sesi çal
+      if (this.peer.id != peerId) {
+        this.playJoinSound('leave'); // Çıkış sesi çal
+      }
+
       this.connectedPeers = this.connectedPeers.filter((peersId) => peersId !== peerId);
       if (this.peers[peerId]) {
         this.peers[peerId].close();
