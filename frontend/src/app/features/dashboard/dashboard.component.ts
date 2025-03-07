@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -23,11 +23,12 @@ import { User } from '../../core/models/user.model';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   imports: [CommonModule, FormsModule, ChatComponent, DashboardHeaderComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  serverList: Server[] = [];
+  serverList$!: Observable<Server[] | undefined>;
   selectedServer: Server | null = null;
   channels$?: Observable<Channel[]>;
   channelChange$ = new BehaviorSubject<Channel | undefined>(undefined);
@@ -52,13 +53,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public mobileCheckService: MobileCheckService,
     private audioDetector: AudioDetectorService,
-    private voiceChatService: VoiceChatService
-  ) {}
+    private voiceChatService: VoiceChatService,
+    private cd: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.initializeAuth();
-    this.getAllServers();
-    this.setupSocketListeners();
+    this.serverList$ = this.getAllServers();
   }
 
   private initializeAuth(): void {
@@ -72,6 +73,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.socketService.onUpdateUserList((users) => {
       this.usersInChannel = users;
       console.log('Kullanıcı listesi güncellendi:', users);
+      this.cd.markForCheck();
     });
 
     this.socketService.onUpdateSpeakingStatus((data) => {
@@ -82,20 +84,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  getAllServers(): void {
-    this.serverService.getServers()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((res) => {
-        if (res.servers) {
-          this.serverList = res.servers;
-        }
-      });
+  getAllServers() {
+    return this.serverService.getServers().pipe(
+      takeUntil(this.destroy$),
+      map((res) => res.servers)
+    )
+  }
+
+  socketRelatedInıt(serverId: string) {
+    this.socketService.disconnect();
+    this.socketService.initSocketServer(serverId ?? '1');
+    this.voiceChatService.starter();
+    this.setupSocketListeners();
   }
 
   selectServer(server: Server): void {
+    this.socketRelatedInıt(server.id ?? "1");
+
     this.socketService.getSocket().connect();
     this.selectedServer = server;
-    
+
     if (server.id) {
       this.channels$ = this.channelService.getChannelsByServer(server.id).pipe(
         map((res) => res.channels ?? [])
@@ -108,7 +116,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async selectChannel(channel: Channel): Promise<void> {
     console.log('Kanal değiştirildi:', channel);
     this.previousChannelId.push(channel.id);
-    
+
     const token = this.authService.getToken();
     if (channel.id && token) {
       this.socketService.authenticate(token);
@@ -116,7 +124,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.socketService.joinRoom(channel.id, previousChannelIdNew);
 
       await this.voiceChatService.initialize(`${channel.id}-voice`, `${previousChannelIdNew}-voice`);
-      
+
       this.toggleStatus();
       this.channelChange$.next(channel);
       this.startAudioAnalysis();
@@ -125,7 +133,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   startAudioAnalysis(): void {
     const stream = this.voiceChatService.getMediaStream();
-    
+
     if (!stream) {
       console.error('❌ Serviste aktif medya akışı bulunamadı!');
       return;
@@ -192,11 +200,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe((res) => {
           if (res.server.id) {
-            this.getAllServers();
+            this.serverList$ = this.getAllServers();
           }
           this.closeAddServerModal();
         });
     }
+  }
+
+  changeVolume(event: Event, peerId: string) {
+    const volume = (event.target as HTMLInputElement).valueAsNumber;
+    this.voiceChatService.setVolume(peerId, volume);
+  }
+
+  volumeDisplayCondition(channelId: string, channelIndex: number): boolean {
+    return (this.getPeerId() != null && this.usersInChannel?.[channelId + '-voice']?.[channelIndex]?.peerId != this.getPeerId())
+  }
+
+  getCurrentVolume(peerId: string) {
+    return this.voiceChatService.peerVolumes[peerId] ?? 1;
+  }
+
+  getPeerId() {
+    console.log("peer");
+
+    return this.voiceChatService.getPeerId();
   }
 
   ngOnDestroy(): void {

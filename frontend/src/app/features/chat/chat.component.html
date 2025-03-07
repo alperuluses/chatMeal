@@ -10,7 +10,7 @@
     <div class="messages" #chat>
       <div *ngFor="let message of messages" class="message">
         <span><strong>{{ message.username }}:</strong> {{ message.content }}</span> 
-        <span class="message-date">{{formatDate(message.sent_at) }}</span>
+        <span class="message-date">{{message.sent_at | formatDate}}</span>
       </div>
     </div>
     <div class="form">

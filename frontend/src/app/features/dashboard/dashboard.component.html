@@ -15,7 +15,7 @@
         </button>
       </div>
 
-      <ul>
+      <ul *ngIf="serverList$ | async as serverList">
         <li
           *ngFor="let server of serverList"
           [class.active]="selectedServer === server.id"
@@ -40,9 +40,12 @@
             </li>
             <ul *ngIf="channel.id">
               <ng-container *ngIf="usersInChannel?.[channel.id]">
-                <li *ngFor="let user of usersInChannel[channel.id]">
+                <li *ngFor="let user of usersInChannel[channel.id]; index as i">
                   <i class="bi bi-person-fill"></i>
-                  <span>{{ user }} {{ speakingUsers[channel.id]?.[user] ? "🔊" : "" }}</span>
+                  <span>{{ user.name }} {{ speakingUsers[channel.id]?.[user] ? "🔊" : "" }}</span>
+                  <ng-container *ngIf="volumeDisplayCondition(channel.id, i)">
+                    <input  type="range" min="0" max="1" step="0.03" [value]="getCurrentVolume(usersInChannel[channel.id+'-voice'][i]?.peerId)" (change)="changeVolume($event, usersInChannel[channel.id+'-voice'][i].peerId)" />
+                  </ng-container>
                 </li>
               </ng-container>
             </ul>

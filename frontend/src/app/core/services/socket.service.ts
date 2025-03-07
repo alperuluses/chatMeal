@@ -7,14 +7,21 @@ import { AuthService } from './auth-service';
   providedIn: 'root'
 })
 export class SocketService {
-  private socket: Socket;
-  private readonly serverUrl: string;
+  private socket!: Socket;
+  private serverUrl!: string; // Sunucu adresi
   private currentRoom: string | null = null; // Kullanıcının bulunduğu oda
   private heartBeatInterval: any = null;
 
   constructor(private apiUrlService: ApiUrlService, private authService: AuthService) {
-    this.serverUrl = this.apiUrlService.getPureUrl("socketUrl") // Sunucu adresi
-    this.socket = this.getIo()
+
+  }
+
+  initSocketServer(serverId: string): void {
+    const dynamicParams = { nameSpace: `server${serverId}` };
+    this.serverUrl = this.apiUrlService.getPureUrl("socketUrl", dynamicParams);
+    this.socket = this.getIo();
+    console.log("Socket server initialized:", this.serverUrl);
+
   }
 
   getIo() {
@@ -25,7 +32,7 @@ export class SocketService {
     });
   }
 
-  getSocket(){
+  getSocket() {
     return this.socket;
   }
 
@@ -87,7 +94,7 @@ export class SocketService {
     this.socket.on('updateUserList', callback);
   }
 
-  onUpdateSpeakingStatus(callback:(data: { userName: string;channelId:string; isSpeaking: boolean }) => void){
+  onUpdateSpeakingStatus(callback: (data: { userName: string; channelId: string; isSpeaking: boolean }) => void) {
     this.socket.on("update-speaking-status", callback)
   }
 
@@ -108,5 +115,11 @@ export class SocketService {
         this.socket.emit('heartbeat', { username: user.username });
       }
     }, 10000);
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   }
 }
