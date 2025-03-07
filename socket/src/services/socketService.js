@@ -13,12 +13,19 @@ const initializeSocket = (server) => {
     },
   });
 
-  // Kullanıcıların hangi odada olduğunu takip etmek için bir nesne kullanabilirsiniz.
-  const usersInRooms = {};
-  const users = {}; // Kullanıcı bilgilerini saklamak için global bir nesne
-  const rooms = {}; // Odaları saklamak için obje
-  io.on("connection", (socket) => {
+  io.of(/^\/server\d+$/).on("connection", (socket) => {
+    const nameSpaceName = socket.nsp.name; // Bağlanan namespace (örn: /server1)
+    const namespace = socket.nsp; // Namespace nesnesi
+    if (!namespace.hasOwnProperty("initialized") || !namespace.initialized) {
+      namespace.initialized = true;
+      namespace.usersInRooms = {};
+      namespace.users = {}; // Kullanıcı bilgilerini saklamak için global bir nesne
+      namespace.rooms = {}; // Odaları saklamak için obje
+      console.log("Namespace oluşturuldu:", nameSpaceName);
+    }
+    console.log(`[${nameSpaceName}] Kullanıcı bağlandı:`, socket.id);
     console.log("Kullanıcı katıldı:", socket.id);
+
     // JWT doğrulama
     socket.on("authenticate", (token) => {
       jwt.verify(
@@ -29,8 +36,10 @@ const initializeSocket = (server) => {
             socket.emit("authError", "Geçersiz token");
             socket.disconnect();
           } else {
+            console.log("Kimlik doğrulandı:", user.username);
+
             socket.user = user; // Socket nesnesine kullanıcı bilgisini ekle
-            users[socket.id] = user; // Kullanıcıyı global nesnede sakla
+            namespace.users[socket.id] = user; // Kullanıcıyı global nesnede sakla
             socket.emit("authSuccess", "Kimlik doğrulandı");
           }
         }
@@ -47,26 +56,26 @@ const initializeSocket = (server) => {
       }
     }
 
-    function updateActiveUserWithRoom(roomId, previousChannelId) {
-      if (!usersInRooms[roomId]) {
-        usersInRooms[roomId] = [];
+    function updateActiveUserWithRoom(roomId, previousChannelId,peerId) {
+      if (!namespace.usersInRooms[roomId]) {
+        namespace.usersInRooms[roomId] = [];
       }
 
       console.log("Önceki odanın idsi:", previousChannelId);
-      console.log("Update user:", usersInRooms[previousChannelId]);
+      console.log("Update user:", namespace.usersInRooms[previousChannelId], peerId);
 
-      if (previousChannelId && usersInRooms[previousChannelId]) {
-        usersInRooms[previousChannelId] = usersInRooms[
+      if (previousChannelId && namespace.usersInRooms[previousChannelId]) {
+        namespace.usersInRooms[previousChannelId] = namespace.usersInRooms[
           previousChannelId
-        ].filter((user) => user !== socket.user.username);
+        ].filter((user) => user.name !== socket.user.username);
       }
 
       //Kullanıyı gireceği odaya ekleme
-      usersInRooms[roomId].push(socket.user.username);
-      usersInRooms[roomId] = Array.from(new Set(usersInRooms[roomId]));
+      namespace.usersInRooms[roomId].push({name:socket.user.username,peerId:peerId});
+      namespace.usersInRooms[roomId] = Array.from(new Set(namespace.usersInRooms[roomId]));
 
       // Odadaki kullanıcı listesini güncelleyin ve herkese gönderin
-      io.emit("updateUserList", usersInRooms);
+      socket.nsp.emit("updateUserList", namespace.usersInRooms);
     }
 
     // Odaya giriş
@@ -100,7 +109,7 @@ const initializeSocket = (server) => {
         //Leave previous channel if its exist
         leavePreviousChannel(previousChannelId);
 
-        updateActiveUserWithRoom(roomId, previousChannelId);
+        updateActiveUserWithRoom(roomId, previousChannelId,userId);
 
         socket.join(roomId);
         console.log(
@@ -118,9 +127,9 @@ const initializeSocket = (server) => {
     });
 
     socket.on("emitUserList", () => {
-      console.log("emitUserList");
+      console.log("emitUserList",namespace.usersInRooms);
 
-      io.emit("updateUserList", usersInRooms);
+      socket.nsp.emit("updateUserList", namespace.usersInRooms);
     });
 
     socket.on("sendMessage", async (messageData) => {
@@ -139,7 +148,7 @@ const initializeSocket = (server) => {
 
           console.log("Mesaj veritabanına kaydedildi, ID:", messageId);
 
-          io.to(roomId).emit("receiveMessage", {
+          socket.nsp.to(roomId).emit("receiveMessage", {
             username: socket.user.username,
             message,
           });
@@ -154,18 +163,18 @@ const initializeSocket = (server) => {
 
     socket.on("user-speaking", (data) => {
       // Örneğin: { userId: "123", channelId: "abc", isSpeaking: true }
-      console.log("user-speak:",data);
-      
-      io.to(data.channelId).emit("update-speaking-status", data);
+      console.log("user-speak:", data);
+
+      socket.nsp.to(data.channelId).emit("update-speaking-status", data);
     });
 
     socket.on("user-destroyed", (roomId, peerId) => {
-      io.to(roomId).emit("user-destroyed", peerId);
+      socket.nsp.to(roomId).emit("user-destroyed", peerId);
       console.log("user-destroyed", `${peerId} - ${roomId}`);
     });
 
     socket.on("disconnect", (reason) => {
-      const user = users[socket.id]; // Kullanıcı bilgisini al
+      const user = namespace.users[socket.id]; // Kullanıcı bilgisini al
       let disconnectReason = "";
       if (reason === "io client disconnect") {
         disconnectReason = "Kullanıcı kendi isteğiyle çıktı.";
@@ -179,23 +188,24 @@ const initializeSocket = (server) => {
         console.log(`Kullanıcı ayrıldı: ${user.username}`);
 
         // Kullanıcının bulunduğu odayı bul
-        for (const roomId in usersInRooms) {
-          if (usersInRooms[roomId].includes(user.username)) {
+        for (const roomId in namespace.usersInRooms) {
+          console.log("Kullanıcı odalarda aranıyor:", namespace.usersInRooms, user.username);
+          if (namespace.usersInRooms[roomId].some(room => room.name === user.username)) {
             console.log(
               `Kullanıcı ${user.username}, ${roomId} odasından ayrıldı. Sebep: ${disconnectReason}`
             );
 
             // Kullanıcıyı odadan çıkar
-            usersInRooms[roomId] = usersInRooms[roomId].filter(
-              (u) => u !== user.username
+            namespace.usersInRooms[roomId] = namespace.usersInRooms[roomId].filter(
+              (u) => u.name !== user.username
             );
 
             // Kullanıcı listesini güncelle
-            io.emit("updateUserList", usersInRooms);
+            socket.nsp.emit("updateUserList", namespace.usersInRooms);
           }
         }
 
-        delete users[socket.id]; // Kullanıcıyı global nesneden kaldır
+        delete namespace.users[socket.id]; // Kullanıcıyı global nesneden kaldır
       } else {
         console.log(`Bilinmeyen kullanıcı ayrıldı: ${socket.id}`);
       }

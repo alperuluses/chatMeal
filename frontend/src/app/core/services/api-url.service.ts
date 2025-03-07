@@ -16,7 +16,17 @@ export class ApiUrlService {
     return `${this.apiUrl}/${endpoint}`;
   }
 
-  getPureUrl(key:string): string {
-    return environment[key as keyof typeof environment] as string;
+  getPureUrl(key: string, dynamicParams: Record<string, string> = {}): string {
+    let url = environment[key as keyof typeof environment] as string;
+    console.log('URL:',url);
+    if (dynamicParams) {
+      for (const [key, value] of Object.entries(dynamicParams)) {
+        url = url.replace(`\${${key}}`, value);
+        console.log('Dynamic URL:',url, dynamicParams,key,value,`\${${key}}`);
+      }
+
+      
+    }
+    return url;
   }
 }

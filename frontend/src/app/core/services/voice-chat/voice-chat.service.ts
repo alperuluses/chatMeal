@@ -7,10 +7,11 @@ import { Peers } from '../../models/peer.model';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../auth-service';
 import { User } from '../../models/user.model';
+import { soundMap } from './sound.config';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChatService {
-  private socket: Socket;
+  private socket!: Socket;
   private peer!: Peer;
   private myStream!: MediaStream;
   private peers: Peers = {};
@@ -20,9 +21,15 @@ export class VoiceChatService {
   private screenShareStatus = new BehaviorSubject<boolean>(false);
   private currentUser: User | null = null;
   screenShareStatus$ = this.screenShareStatus.asObservable();
+  peerVolumes: { [key: string]: number } = {};
+
 
 
   constructor(private socketService: SocketService, private authService: AuthService) {
+
+  }
+
+  starter() {
     //sayfa yenilendiğinde kullanıcıyı destroy et
     window.addEventListener('beforeunload', () => {
       this.socket.emit("user-destroyed", this.currentChanellId, this.peer.id);
@@ -240,6 +247,10 @@ export class VoiceChatService {
       audio.id = `audio-${peerId}`;
       audio.srcObject = stream;
       audio.autoplay = true;
+      if (!this.peerVolumes[peerId]) {
+        this.peerVolumes[peerId] = 1;
+      }
+      audio.volume = this.peerVolumes[peerId] || 1;
       document.body.appendChild(audio);
       console.log(`🔊 Ses eklendi: audio-${peerId}`);
     }
@@ -330,10 +341,7 @@ export class VoiceChatService {
 
   async playJoinSound(type: string = 'join') {
     try {
-      const soundMap = {
-        join: 'assets/sounds/adam-geldi.mp3',
-        leave: 'assets/sounds/unlost-disconnect.mp3',
-      };
+
 
       const audio = new Audio(soundMap[type as keyof typeof soundMap] || soundMap.join);
       await audio.play();
@@ -341,6 +349,26 @@ export class VoiceChatService {
       console.error('Ses çalarken hata oluştu:', err);
     }
   }
+
+  setVolume(peerId: string, volumeLevel: number) {
+    const audioElement = document.getElementById(`audio-${peerId}`) as HTMLAudioElement;
+    const videoElement = document.getElementById(`video-${peerId}`) as HTMLAudioElement;
+    if (audioElement) {
+      if (this.peerVolumes[peerId] !== volumeLevel) {
+        this.peerVolumes[peerId] = volumeLevel;
+      }
+      audioElement.volume = volumeLevel;
+      console.log(`🔊 ${peerId} için ses seviyesi ayarlandı: ${volumeLevel}`);
+    } else {
+      console.warn(`⚠️ Ses öğesi bulunamadı: audio-${peerId}`);
+    }
+
+    if (videoElement) {
+      videoElement.volume = volumeLevel;
+      console.log(`🔊 video-${peerId} için ses seviyesi ayarlandı: ${volumeLevel}`);
+    }
+  }
+
 
   cleanupPreviousConnections(previousChannelId: string) {
     console.log(`🚪 Eski odadan çıkılıyor: ${previousChannelId}`);
@@ -401,6 +429,10 @@ export class VoiceChatService {
 
   getMediaStream() {
     return this.myStream;
+  }
+
+  getPeerId() {
+    return this.peer?.id;
   }
 
   setScreenShareStatus(status: boolean) {
