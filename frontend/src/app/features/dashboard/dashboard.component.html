@@ -44,7 +44,7 @@
                   <i class="bi bi-person-fill"></i>
                   <span>{{ user.name }} {{ speakingUsers[channel.id]?.[user] ? "🔊" : "" }}</span>
                   <ng-container *ngIf="volumeDisplayCondition(channel.id, i)">
-                    <input  type="range" min="0" max="1" step="0.03" [value]="getCurrentVolume(usersInChannel[channel.id+'-voice'][i]?.peerId)" (change)="changeVolume($event, usersInChannel[channel.id+'-voice'][i].peerId)" />
+                    <input  type="range" min="0" max="1" step="0.03" [value]="getCurrentVolume(usersInChannel[channel.id+'-voice']?.[i]?.peerId)" (change)="changeVolume($event, usersInChannel[channel.id+'-voice']?.[i].peerId)" />
                   </ng-container>
                 </li>
               </ng-container>
