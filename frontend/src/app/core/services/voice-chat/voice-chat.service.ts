@@ -45,7 +45,7 @@ export class VoiceChatService {
         this.connectedPeers.push(peerId);
       }
       console.log('🟢 Yeni kullanıcı bağlandı:', [peerId, socketName]);
-      this.playJoinSound(); // Giriş sesi çal
+      this.playJoinSound("joinDc"); // Giriş sesi çal
 
       // Stream hazır değilse bekleyerek dene
       const tryCallingUser = () => {

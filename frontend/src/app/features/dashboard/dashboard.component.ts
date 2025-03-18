@@ -80,7 +80,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (!this.speakingUsers[data.channelId]) {
         this.speakingUsers[data.channelId] = {};
       }
-      this.speakingUsers[data.channelId][data.userName] = data.isSpeaking;
+
+      //Eğer bir nesnenin içeriğini doğrudan değiştiriyorsan, Angular bunu fark etmeyebilir. Bunun yerine yeni bir nesne oluşturmalısın.
+      this.speakingUsers = {
+        ...this.speakingUsers,
+        [data.channelId]: {
+          ...this.speakingUsers[data.channelId],
+          [data.userName]: data.isSpeaking,
+        },
+      };
     });
   }
 

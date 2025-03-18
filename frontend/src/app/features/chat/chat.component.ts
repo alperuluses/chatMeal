@@ -47,8 +47,9 @@ export class ChatComponent implements OnInit, OnChanges {
     this.socketService.onMessage((messageData) => {
       messageData.content = messageData.message;
       messageData.sent_at = new Date().toISOString();
-      this.messages.push(messageData);
+      this.messages = [...this.messages, messageData]; // Yeni mesajı ekle
       this.shouldScroll = true;  // Yeni mesaj geldiğinde kaydır
+      this.cd.markForCheck();
     });
 
     if (this.channelId) {
@@ -68,7 +69,7 @@ export class ChatComponent implements OnInit, OnChanges {
     this.channelService.getAllMessagesWithChannel(channelId).subscribe((messages) => {
       this.messages = messages;
       this.shouldScroll = true; // Yeni mesajlar alındığında kaydır
-      this.cd.markForCheck();
+      this.cd.detectChanges();
     });
 
   }
